@@ -45,10 +45,10 @@ export default function App() {
       <Header />
       <main>
         <Hero />
-        <Services />
         <BeforeAfter />
         <Gallery />
         <Differentials />
+        <Services />
         <Testimonials />
         <Location />
       </main>
