@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { CreditCard, Loader2, ShoppingCart, Trash2, Truck, X } from 'lucide-react'
+import { fallbackProducts } from '../data/fallbackProducts.js'
 import { authHeaders, readAuth } from '../lib/auth.js'
 import { cartEventName, cartOpenEventName, readCart, setProductQuantity } from '../lib/cart.js'
 
@@ -30,10 +31,11 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
     async function loadProducts() {
       try {
         const response = await fetch('/api/products')
-        if (!response.ok) return
-        setProducts(await response.json())
+        if (!response.ok) throw new Error('Nao foi possivel carregar produtos.')
+        const data = await response.json()
+        setProducts(data.length > 0 ? data : fallbackProducts)
       } catch {
-        setProducts([])
+        setProducts(fallbackProducts)
       }
     }
 

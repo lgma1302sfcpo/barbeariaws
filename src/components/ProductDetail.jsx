@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ArrowLeft, Loader2, Minus, Plus, ShoppingCart } from 'lucide-react'
+import { fallbackProducts } from '../data/fallbackProducts.js'
 import { maxProductQuantity, openCartMenu, readCart, setProductQuantity } from '../lib/cart.js'
 
 function formatCurrency(cents, currency = 'brl') {
@@ -28,7 +29,15 @@ export default function ProductDetail({ productId }) {
         const cartQuantity = Number(readCart()[data.id] || 0)
         setQuantity(cartQuantity > 0 ? cartQuantity : 1)
       } catch (loadError) {
-        setError(loadError.message)
+        const fallbackProduct = fallbackProducts.find((candidate) => candidate.id === productId)
+
+        if (fallbackProduct) {
+          setProduct(fallbackProduct)
+          const cartQuantity = Number(readCart()[fallbackProduct.id] || 0)
+          setQuantity(cartQuantity > 0 ? cartQuantity : 1)
+        } else {
+          setError(loadError.message)
+        }
       } finally {
         setLoading(false)
       }
