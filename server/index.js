@@ -35,7 +35,7 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const rootDir = path.resolve(__dirname, '..')
-const app = express()
+export const app = express()
 const port = Number(process.env.PORT || 4242)
 const appUrl = process.env.APP_URL || `http://localhost:${port}`
 const stripe = process.env.STRIPE_SECRET_KEY
@@ -534,11 +534,13 @@ app.post('/api/checkout', checkoutLimiter, async (req, res, next) => {
   }
 })
 
-app.use('/assets/products', express.static(path.join(rootDir, 'public', 'assets', 'products')))
-app.use(express.static(path.join(rootDir, 'dist')))
-app.get(/.*/, (_req, res) => {
-  res.sendFile(path.join(rootDir, 'dist/index.html'))
-})
+if (!process.env.VERCEL) {
+  app.use('/assets/products', express.static(path.join(rootDir, 'public', 'assets', 'products')))
+  app.use(express.static(path.join(rootDir, 'dist')))
+  app.get(/.*/, (_req, res) => {
+    res.sendFile(path.join(rootDir, 'dist/index.html'))
+  })
+}
 
 app.use((error, _req, res, _next) => {
   console.error(error)
@@ -565,6 +567,10 @@ app.use((error, _req, res, _next) => {
   res.status(500).json({ error: error.message || 'Erro interno' })
 })
 
-app.listen(port, () => {
-  console.log(`Backend rodando em http://localhost:${port}`)
-})
+if (!process.env.VERCEL) {
+  app.listen(port, () => {
+    console.log(`Backend rodando em http://localhost:${port}`)
+  })
+}
+
+export default app

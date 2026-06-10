@@ -35,7 +35,9 @@ export default function Products() {
         setProducts(data.length > 0 ? data : fallbackProducts)
       } catch {
         setProducts(fallbackProducts)
-        setError('Backend indisponivel. Exibindo produto de exemplo; rode npm run dev:server para checkout e frete.')
+        if (import.meta.env.DEV) {
+          setError('Backend indisponivel. Exibindo produto de exemplo; rode npm run dev:server para checkout e frete.')
+        }
       } finally {
         setLoadingProducts(false)
       }
