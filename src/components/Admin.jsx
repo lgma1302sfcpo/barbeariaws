@@ -354,7 +354,7 @@ export default function Admin() {
       if (!response.ok) throw new Error(data.error || 'Nao foi possivel enviar a imagem.')
 
       setForm((current) => ({ ...current, image: data.url }))
-      setMessage('Imagem enviada. Agora salve o produto.')
+      setMessage('Imagem carregada. Agora salve o produto.')
     } catch (uploadError) {
       setError(uploadError.message)
     } finally {

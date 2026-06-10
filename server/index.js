@@ -333,6 +333,10 @@ app.post('/api/admin/uploads/product-image', requireAdmin, async (req, res, next
       return res.status(400).json({ error: 'A imagem deve ter no maximo 8 MB.' })
     }
 
+    if (process.env.VERCEL) {
+      return res.status(201).json({ url: payload.dataUrl })
+    }
+
     const baseName =
       path
         .parse(payload.fileName)

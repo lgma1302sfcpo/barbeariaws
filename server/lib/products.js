@@ -24,7 +24,7 @@ const productSchema = z.object({
   description: z.string().trim().max(1200),
   priceCents: z.coerce.number().int().positive().max(1_000_000),
   currency: z.string().trim().toLowerCase().regex(/^[a-z]{3}$/),
-  image: z.string().trim().min(1).max(500),
+  image: z.string().trim().min(1).max(12 * 1024 * 1024),
   active: z.boolean(),
   stripePriceId: z
     .string()
