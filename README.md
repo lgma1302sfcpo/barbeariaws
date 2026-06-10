@@ -17,6 +17,8 @@ PORT=4242
 APP_URL=http://localhost:5173
 VITE_API_BASE_URL=
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/barbeariaws?schema=public
+# Opcional para migrations no Supabase:
+DIRECT_URL=
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_CURRENCY=brl
@@ -82,6 +84,34 @@ npm run db:studio
 ```
 
 Use `db:migrate` em desenvolvimento quando alterar o schema. Use `db:deploy` em producao.
+
+### Aplicar migrations no Supabase
+
+Se a producao retornar `The table public.User does not exist`, o banco foi criado mas as migrations ainda nao rodaram.
+
+Para Supabase, use a connection string de **Session pooler** ou **Direct connection** para executar migrations. A URL de **Transaction pooler** e recomendada para o runtime no Vercel, mas nao para criar tabelas.
+
+No terminal local, configure temporariamente:
+
+```bash
+DATABASE_URL="postgresql://postgres.ywafjucfozxfuyrjrgxp:SUA_SENHA@aws-1-sa-east-1.pooler.supabase.com:5432/postgres"
+ADMIN_EMAIL="barbershopws13@gmail.com"
+ADMIN_PASSWORD="barbearia-ws"
+RESET_ADMIN_PASSWORD="true"
+```
+
+Depois rode:
+
+```bash
+npm run db:deploy
+npm run db:seed
+```
+
+No Vercel, use a URL de **Transaction pooler** como `DATABASE_URL`:
+
+```text
+postgresql://postgres.ywafjucfozxfuyrjrgxp:SUA_SENHA@aws-1-sa-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+```
 
 ## Produtos
 
