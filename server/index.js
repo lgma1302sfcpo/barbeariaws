@@ -140,7 +140,39 @@ function buildAllowedOrigins() {
   return origins
 }
 
+function getRequestHosts(req) {
+  return [
+    req.headers.host,
+    req.headers['x-forwarded-host'],
+    req.headers['x-vercel-forwarded-host'],
+  ]
+    .filter(Boolean)
+    .flatMap((value) => String(value).split(','))
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean)
+}
+
+function isSameOriginRequest(origin, req) {
+  try {
+    const originHost = new URL(origin).host.toLowerCase()
+    return getRequestHosts(req).includes(originHost)
+  } catch {
+    return false
+  }
+}
+
 const allowedOrigins = buildAllowedOrigins()
+const allowAnyOrigin = process.env.VERCEL === '1' || process.env.CORS_ALLOW_ALL === 'true'
+const corsMiddleware = (req, res, next) =>
+  cors({
+    origin(origin, callback) {
+      if (allowAnyOrigin || !origin || allowedOrigins.has(origin) || isSameOriginRequest(origin, req)) {
+        return callback(null, true)
+      }
+
+      return callback(createHttpError(403, 'Origin nao permitida pelo CORS.'))
+    },
+  })(req, res, next)
 const authLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 20,
@@ -152,17 +184,7 @@ const checkoutLimiter = createRateLimiter({
   message: 'Muitas requisicoes. Aguarde um minuto e tente novamente.',
 })
 
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin || allowedOrigins.has(origin)) {
-        return callback(null, true)
-      }
-
-      return callback(createHttpError(403, 'Origin nao permitida pelo CORS.'))
-    },
-  }),
-)
+app.use(corsMiddleware)
 
 async function requireAdmin(req, res, next) {
   try {

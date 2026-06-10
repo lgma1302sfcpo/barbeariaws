@@ -212,10 +212,11 @@ VITE_API_BASE_URL=https://api.seu-dominio.com
 AUTH_SECRET=
 ADMIN_EMAIL=
 ADMIN_PASSWORD=
-CORS_ORIGINS=https://seu-dominio.com
+CORS_ORIGINS=
+CORS_ALLOW_ALL=false
 ```
 
-Se frontend e backend estiverem no mesmo dominio, deixe `VITE_API_BASE_URL` vazio. Se o Vercel hospedar apenas o frontend, configure `VITE_API_BASE_URL` com a URL publica do backend Express.
+Se frontend e backend estiverem no mesmo dominio, deixe `VITE_API_BASE_URL` e `CORS_ORIGINS` vazios. No Vercel, qualquer origin e permitido automaticamente para evitar bloqueio em dominios de preview/customizados. Fora do Vercel, use `CORS_ORIGINS` ou `CORS_ALLOW_ALL=true` apenas se a API precisar aceitar multiplos dominios.
 
 Depois rode:
 
