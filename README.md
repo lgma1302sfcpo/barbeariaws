@@ -15,6 +15,7 @@ Crie o arquivo `.env` a partir de `.env.example` e configure:
 ```text
 PORT=4242
 APP_URL=http://localhost:5173
+VITE_API_BASE_URL=
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/barbeariaws?schema=public
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
@@ -207,11 +208,14 @@ DATABASE_URL=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 APP_URL=https://seu-dominio.com
+VITE_API_BASE_URL=https://api.seu-dominio.com
 AUTH_SECRET=
 ADMIN_EMAIL=
 ADMIN_PASSWORD=
 CORS_ORIGINS=https://seu-dominio.com
 ```
+
+Se frontend e backend estiverem no mesmo dominio, deixe `VITE_API_BASE_URL` vazio. Se o Vercel hospedar apenas o frontend, configure `VITE_API_BASE_URL` com a URL publica do backend Express.
 
 Depois rode:
 

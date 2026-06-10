@@ -9,6 +9,7 @@ import {
   setProductQuantity,
 } from '../lib/cart.js'
 import { fallbackProducts } from '../data/fallbackProducts.js'
+import { apiUrl, readApiJson } from '../lib/api.js'
 
 function formatCurrency(cents, currency = 'brl') {
   return new Intl.NumberFormat('pt-BR', {
@@ -27,10 +28,10 @@ export default function Products() {
   useEffect(() => {
     async function loadProducts() {
       try {
-        const response = await fetch('/api/products')
+        const response = await fetch(apiUrl('/api/products'))
         if (!response.ok) throw new Error('Nao foi possivel carregar os produtos.')
 
-        const data = await response.json()
+        const data = await readApiJson(response, 'Nao foi possivel carregar os produtos.')
         setProducts(data.length > 0 ? data : fallbackProducts)
       } catch {
         setProducts(fallbackProducts)

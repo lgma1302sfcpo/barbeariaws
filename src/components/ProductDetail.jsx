@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowLeft, Loader2, Minus, Plus, ShoppingCart } from 'lucide-react'
 import { fallbackProducts } from '../data/fallbackProducts.js'
+import { apiUrl, readApiJson } from '../lib/api.js'
 import { maxProductQuantity, openCartMenu, readCart, setProductQuantity } from '../lib/cart.js'
 
 function formatCurrency(cents, currency = 'brl') {
@@ -20,8 +21,8 @@ export default function ProductDetail({ productId }) {
   useEffect(() => {
     async function loadProduct() {
       try {
-        const response = await fetch(`/api/products/${productId}`)
-        const data = await response.json().catch(() => ({}))
+        const response = await fetch(apiUrl(`/api/products/${productId}`))
+        const data = await readApiJson(response, 'Produto nao encontrado.')
 
         if (!response.ok) throw new Error(data.error || 'Produto nao encontrado.')
 

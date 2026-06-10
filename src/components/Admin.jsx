@@ -11,6 +11,7 @@ import {
   ShoppingBag,
   Trash2,
 } from 'lucide-react'
+import { apiUrl, readApiJson } from '../lib/api.js'
 import { authHeaders, clearAuth, readAuth, writeAuth } from '../lib/auth.js'
 import { clearCart } from '../lib/cart.js'
 
@@ -265,12 +266,12 @@ export default function Admin() {
     setLoading(true)
     try {
       const [productsResponse, ordersResponse] = await Promise.all([
-        fetch('/api/admin/products', { headers: authHeaders() }),
-        fetch('/api/admin/orders', { headers: authHeaders() }),
+        fetch(apiUrl('/api/admin/products'), { headers: authHeaders() }),
+        fetch(apiUrl('/api/admin/orders'), { headers: authHeaders() }),
       ])
 
-      const productsData = await productsResponse.json().catch(() => [])
-      const ordersData = await ordersResponse.json().catch(() => [])
+      const productsData = await readApiJson(productsResponse, 'Nao foi possivel carregar os produtos.').catch(() => [])
+      const ordersData = await readApiJson(ordersResponse, 'Nao foi possivel carregar os pedidos.').catch(() => [])
 
       if (!productsResponse.ok) throw new Error(productsData.error || 'Nao foi possivel carregar os produtos.')
       if (!ordersResponse.ok) throw new Error(ordersData.error || 'Nao foi possivel carregar os pedidos.')
@@ -302,13 +303,13 @@ export default function Admin() {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(apiUrl('/api/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(loginForm),
       })
 
-      const data = await response.json().catch(() => ({}))
+      const data = await readApiJson(response, 'Nao foi possivel entrar.').catch(() => ({}))
       if (!response.ok) throw new Error(data.error || 'Nao foi possivel entrar.')
       if (data.user?.role !== 'ADMIN') throw new Error('Essa conta nao tem permissao administrativa.')
 
@@ -343,13 +344,13 @@ export default function Admin() {
     setUploadingImage(true)
     try {
       const dataUrl = await readFileAsDataUrl(file)
-      const response = await fetch('/api/admin/uploads/product-image', {
+      const response = await fetch(apiUrl('/api/admin/uploads/product-image'), {
         method: 'POST',
         headers: authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ fileName: file.name, dataUrl }),
       })
 
-      const data = await response.json().catch(() => ({}))
+      const data = await readApiJson(response, 'Nao foi possivel enviar a imagem.').catch(() => ({}))
       if (!response.ok) throw new Error(data.error || 'Nao foi possivel enviar a imagem.')
 
       setForm((current) => ({ ...current, image: data.url }))
@@ -378,13 +379,13 @@ export default function Admin() {
 
     setSaving(true)
     try {
-      const response = await fetch(isEditing ? `/api/admin/products/${editingId}` : '/api/admin/products', {
+      const response = await fetch(apiUrl(isEditing ? `/api/admin/products/${editingId}` : '/api/admin/products'), {
         method: isEditing ? 'PUT' : 'POST',
         headers: authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(formToPayload(form)),
       })
 
-      const data = await response.json().catch(() => ({}))
+      const data = await readApiJson(response, 'Nao foi possivel salvar o produto.').catch(() => ({}))
       if (!response.ok) throw new Error(data.error || 'Nao foi possivel salvar o produto.')
 
       if (isEditing) {
@@ -418,13 +419,13 @@ export default function Admin() {
     setError('')
     setMessage('')
     try {
-      const response = await fetch(`/api/admin/products/${product.id}`, {
+      const response = await fetch(apiUrl(`/api/admin/products/${product.id}`), {
         method: 'DELETE',
         headers: authHeaders(),
       })
 
       if (!response.ok) {
-        const data = await response.json().catch(() => ({}))
+        const data = await readApiJson(response, 'Nao foi possivel desativar o produto.').catch(() => ({}))
         throw new Error(data.error || 'Nao foi possivel desativar o produto.')
       }
 
@@ -454,13 +455,13 @@ export default function Admin() {
     setSavingOrderId(orderId)
 
     try {
-      const response = await fetch(`/api/admin/orders/${orderId}/status`, {
+      const response = await fetch(apiUrl(`/api/admin/orders/${orderId}/status`), {
         method: 'PUT',
         headers: authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ status }),
       })
 
-      const data = await response.json().catch(() => ({}))
+      const data = await readApiJson(response, 'Nao foi possivel atualizar o pedido.').catch(() => ({}))
       if (!response.ok) throw new Error(data.error || 'Nao foi possivel atualizar o pedido.')
 
       setOrders((current) => current.map((order) => (order.id === orderId ? data : order)))

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { CreditCard, Loader2, ShoppingCart, Trash2, Truck, X } from 'lucide-react'
 import { fallbackProducts } from '../data/fallbackProducts.js'
+import { apiUrl, readApiJson } from '../lib/api.js'
 import { authHeaders, readAuth } from '../lib/auth.js'
 import { cartEventName, cartOpenEventName, readCart, setProductQuantity } from '../lib/cart.js'
 
@@ -30,9 +31,9 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
   useEffect(() => {
     async function loadProducts() {
       try {
-        const response = await fetch('/api/products')
+        const response = await fetch(apiUrl('/api/products'))
         if (!response.ok) throw new Error('Nao foi possivel carregar produtos.')
-        const data = await response.json()
+        const data = await readApiJson(response, 'Nao foi possivel carregar produtos.')
         setProducts(data.length > 0 ? data : fallbackProducts)
       } catch {
         setProducts(fallbackProducts)
@@ -106,7 +107,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
 
     setCalculatingFreight(true)
     try {
-      const response = await fetch('/api/freight', {
+      const response = await fetch(apiUrl('/api/freight'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -115,7 +116,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
         }),
       })
 
-      const data = await response.json()
+      const data = await readApiJson(response, 'Nao foi possivel calcular o frete.')
       if (!response.ok) throw new Error(data.error || 'Nao foi possivel calcular o frete.')
 
       setFreightOptions(data.options)
@@ -156,7 +157,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
             ...(auth.user.phone ? { phone: auth.user.phone } : {}),
           }
         : undefined
-      const response = await fetch('/api/checkout', {
+      const response = await fetch(apiUrl('/api/checkout'), {
         method: 'POST',
         headers: authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
@@ -167,7 +168,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
         }),
       })
 
-      const data = await response.json()
+      const data = await readApiJson(response, 'Nao foi possivel iniciar o pagamento.')
       if (!response.ok) throw new Error(data.error || 'Nao foi possivel iniciar o pagamento.')
 
       window.location.href = data.url

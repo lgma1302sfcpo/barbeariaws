@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Loader2, LogIn, UserPlus } from 'lucide-react'
+import { apiUrl, readApiJson } from '../lib/api.js'
 import { writeAuth } from '../lib/auth.js'
 
 export default function AuthPage({ mode = 'login' }) {
@@ -16,13 +17,13 @@ export default function AuthPage({ mode = 'login' }) {
     setLoading(true)
 
     try {
-      const response = await fetch(isRegister ? '/api/auth/register' : '/api/auth/login', {
+      const response = await fetch(apiUrl(isRegister ? '/api/auth/register' : '/api/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(isRegister ? form : { email: form.email, password: form.password }),
       })
 
-      const data = await response.json().catch(() => ({}))
+      const data = await readApiJson(response, 'Nao foi possivel entrar.').catch(() => ({}))
       if (!response.ok) throw new Error(data.error || 'Nao foi possivel entrar.')
 
       writeAuth(data)
