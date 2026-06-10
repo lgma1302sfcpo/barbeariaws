@@ -8,3 +8,5 @@ dist
 output/
 *-screenshot.png
 .chrome-*
+public/assets/products/*
+!public/assets/products/gel-fixador.webp
