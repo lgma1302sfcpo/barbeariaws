@@ -3,6 +3,15 @@ import { findProductsByItems } from './products.js'
 const currency = process.env.STRIPE_CURRENCY || 'brl'
 const cepTimeoutMs = Number(process.env.CEP_TIMEOUT_MS || 5000)
 const freightTimeoutMs = Number(process.env.FREIGHT_TIMEOUT_MS || 7000)
+const defaultFallbackRates = {
+  SP: 1800,
+  RJ: 2800,
+  MG: 3000,
+  PR: 2600,
+  SC: 3200,
+  RS: 3600,
+  default: 4500,
+}
 
 function onlyDigits(value) {
   return String(value || '').replace(/\D/g, '')
@@ -55,9 +64,12 @@ async function fetchCep(cep) {
 
 function getFallbackRates() {
   try {
-    return JSON.parse(process.env.FREIGHT_FALLBACK_RATES_JSON || '{}')
+    return {
+      ...defaultFallbackRates,
+      ...JSON.parse(process.env.FREIGHT_FALLBACK_RATES_JSON || '{}'),
+    }
   } catch {
-    return {}
+    return defaultFallbackRates
   }
 }
 
