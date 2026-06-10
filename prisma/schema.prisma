@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PREPARING
+  READY_FOR_PICKUP
+  SHIPPED
+  DELIVERED
+  CANCELED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model Product {
+  id            String      @id
+  name          String
+  description   String
+  priceCents    Int
+  currency      String      @default("brl")
+  image         String
+  active        Boolean     @default(true)
+  stripePriceId String?
+  weightKg      Float       @default(0.1)
+  widthCm       Float       @default(10)
+  heightCm      Float       @default(4)
+  lengthCm      Float       @default(16)
+  stock         Int?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  orderItems    OrderItem[]
+
+  @@index([active])
+  @@index([createdAt])
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  phone        String?
+  passwordHash String
+  role         String   @default("CUSTOMER")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  orders       Order[]
+
+  @@index([email])
+  @@index([createdAt])
+}
+
+model Order {
+  id                    String        @id @default(cuid())
+  userId                String?
+  status                OrderStatus   @default(PENDING)
+  paymentStatus         PaymentStatus @default(UNPAID)
+  stripeSessionId       String?       @unique
+  stripePaymentIntentId String?
+  customerName          String?
+  customerEmail         String?
+  customerPhone         String?
+  cep                   String
+  city                  String
+  state                 String
+  street                String?
+  neighborhood          String?
+  shippingName          String?
+  shippingLine1         String?
+  shippingLine2         String?
+  shippingCity          String?
+  shippingState         String?
+  shippingPostalCode    String?
+  shippingCountry       String?
+  freightOptionId       String
+  freightType           String
+  freightLabel          String
+  freightAmountCents    Int
+  freightCurrency       String        @default("brl")
+  freightEstimate       String
+  subtotalCents         Int
+  totalCents            Int
+  notes                 String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  paidAt                DateTime?
+  user                  User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items                 OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  orderId    String
+  productId  String?
+  name       String
+  image      String?
+  priceCents Int
+  currency   String   @default("brl")
+  quantity   Int
+  createdAt  DateTime @default(now())
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product    Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([productId])
+}

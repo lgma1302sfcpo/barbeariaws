@@ -39,6 +39,7 @@ export const navItems = [
   { label: 'Antes e depois', href: '#antes-depois' },
   { label: 'Galeria', href: '#galeria' },
   { label: 'Preços', href: '#servicos' },
+  { label: 'Produtos', href: '#produtos' },
   { label: 'Localização', href: '#localizacao' },
 ]
 
