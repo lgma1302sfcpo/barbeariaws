@@ -1,5 +1,12 @@
 import { z } from 'zod'
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { prisma } from './prisma.js'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const fallbackProductsPath = path.resolve(__dirname, '..', 'data', 'products.json')
+let fallbackProductsCache = null
 
 function slugify(value) {
   return String(value || '')
@@ -61,6 +68,28 @@ export function serializeProduct(product) {
   }
 }
 
+function serializeNormalizedProduct(product) {
+  return {
+    id: product.id,
+    name: product.name,
+    description: product.description,
+    priceCents: product.priceCents,
+    currency: product.currency,
+    image: product.image,
+    active: product.active,
+    stripePriceId: product.stripePriceId || '',
+    weightKg: product.weightKg,
+    stock: product.stock,
+    dimensionsCm: {
+      width: product.widthCm,
+      height: product.heightCm,
+      length: product.lengthCm,
+    },
+    createdAt: null,
+    updatedAt: null,
+  }
+}
+
 export function normalizeProduct(input) {
   const product = {
     id: slugify(input.id || input.name),
@@ -84,24 +113,55 @@ export function normalizeProduct(input) {
   return productSchema.parse(product)
 }
 
-export async function readProducts({ includeInactive = false } = {}) {
-  const products = await prisma.product.findMany({
-    where: includeInactive ? undefined : { active: true },
-    orderBy: { createdAt: 'desc' },
-  })
+async function readFallbackProducts() {
+  if (!fallbackProductsCache) {
+    const raw = await fs.readFile(fallbackProductsPath, 'utf-8')
+    fallbackProductsCache = JSON.parse(raw).map((product) => serializeNormalizedProduct(normalizeProduct(product)))
+  }
 
-  return products.map(serializeProduct)
+  return fallbackProductsCache
+}
+
+async function readFallbackProductById(id, { includeInactive = false } = {}) {
+  const products = await readFallbackProducts()
+  return products.find((product) => product.id === id && (includeInactive || product.active !== false)) || null
+}
+
+export async function readProducts({ includeInactive = false } = {}) {
+  try {
+    const products = await prisma.product.findMany({
+      where: includeInactive ? undefined : { active: true },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    if (products.length > 0) {
+      return products.map(serializeProduct)
+    }
+  } catch (error) {
+    console.warn(`Usando catalogo fallback: ${error.message}`)
+  }
+
+  const fallbackProducts = await readFallbackProducts()
+  return includeInactive ? fallbackProducts : fallbackProducts.filter((product) => product.active !== false)
 }
 
 export async function readProductById(id, { includeInactive = false } = {}) {
-  const product = await prisma.product.findFirst({
-    where: {
-      id,
-      ...(includeInactive ? {} : { active: true }),
-    },
-  })
+  try {
+    const product = await prisma.product.findFirst({
+      where: {
+        id,
+        ...(includeInactive ? {} : { active: true }),
+      },
+    })
 
-  return product ? serializeProduct(product) : null
+    if (product) {
+      return serializeProduct(product)
+    }
+  } catch (error) {
+    console.warn(`Usando produto fallback: ${error.message}`)
+  }
+
+  return readFallbackProductById(id, { includeInactive })
 }
 
 export async function createProduct(input) {
@@ -150,26 +210,40 @@ export async function deactivateProduct(id) {
 
 export async function findProductsByItems(items) {
   const ids = items.map((item) => item.productId)
-  const products = await prisma.product.findMany({
-    where: {
-      id: { in: ids },
-      active: true,
-    },
-  })
+  let products = []
 
-  return items.map((item) => {
+  try {
+    products = await prisma.product.findMany({
+      where: {
+        id: { in: ids },
+        active: true,
+      },
+    })
+  } catch (error) {
+    console.warn(`Usando catalogo fallback no carrinho: ${error.message}`)
+  }
+
+  return Promise.all(items.map(async (item) => {
     const product = products.find((candidate) => candidate.id === item.productId)
-    if (!product) {
+    const serializedProduct = product
+      ? serializeProduct(product)
+      : await readFallbackProductById(item.productId)
+
+    if (!serializedProduct) {
       throw new Error(`Produto nao encontrado: ${item.productId}`)
     }
 
-    if (product.stock !== null && product.stock !== undefined && item.quantity > product.stock) {
-      throw new Error(`Estoque insuficiente para ${product.name}`)
+    if (
+      serializedProduct.stock !== null &&
+      serializedProduct.stock !== undefined &&
+      item.quantity > serializedProduct.stock
+    ) {
+      throw new Error(`Estoque insuficiente para ${serializedProduct.name}`)
     }
 
     return {
-      product: serializeProduct(product),
+      product: serializedProduct,
       quantity: item.quantity,
     }
-  })
+  }))
 }
