@@ -101,6 +101,16 @@ function normalizeLineItems(items) {
   })
 }
 
+function buildStripeImageUrl(image) {
+  if (!image || image.startsWith('data:')) return null
+
+  const url = image.startsWith('http://') || image.startsWith('https://')
+    ? image
+    : `${appUrl}${image}`
+
+  return url.length <= 2048 ? url : null
+}
+
 function createRateLimiter({ windowMs, max, message }) {
   const attempts = new Map()
 
@@ -480,10 +490,11 @@ app.post('/api/checkout', checkoutLimiter, async (req, res, next) => {
         return { price: product.stripePriceId, quantity }
       }
 
+      const stripeImageUrl = buildStripeImageUrl(product.image)
       const productData = {
         name: product.name,
         ...(product.description ? { description: product.description } : {}),
-        ...(product.image ? { images: [`${appUrl}${product.image}`] } : {}),
+        ...(stripeImageUrl ? { images: [stripeImageUrl] } : {}),
       }
 
       return {
