@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import Stripe from 'stripe'
 import { z } from 'zod'
 import { calculateFreight } from './lib/freight.js'
-import { configurePixWebhook, createPixCharge, orderIdFromPixTxid } from './lib/efiPix.js'
+import { configurePixWebhook, createPixCharge } from './lib/efiPix.js'
 import {
   createProduct,
   deactivateProduct,
@@ -18,10 +18,12 @@ import {
 } from './lib/products.js'
 import {
   attachStripeSession,
+  attachPixTxid,
   createPendingOrder,
   listOrders,
   markOrderPaid,
   markOrderPaymentFailed,
+  readOrder,
   updateOrderStatus,
 } from './lib/orders.js'
 import { prisma } from './lib/prisma.js'
@@ -420,6 +422,20 @@ app.get('/api/products/:id', async (req, res, next) => {
   }
 })
 
+app.get('/api/orders/:id/status', async (req, res, next) => {
+  try {
+    const order = await readOrder(req.params.id)
+    res.json({
+      id: order.id,
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      paidAt: order.paidAt,
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
 app.get('/api/melhor-envio/callback', async (req, res, next) => {
   try {
     const query = melhorEnvioCallbackSchema.parse(req.query)
@@ -568,16 +584,13 @@ app.post('/api/webhooks/efi-pix', async (req, res, next) => {
     const pixItems = Array.isArray(req.body?.pix) ? req.body.pix : []
 
     for (const pix of pixItems) {
-      const orderId = orderIdFromPixTxid(pix.txid)
-      if (!orderId) continue
-
       await markOrderPaid({
-        orderId,
+        pixTxid: pix.txid,
         customer: {
           name: pix.pagador?.nome,
         },
       }).catch((error) => {
-        console.warn(`Falha ao confirmar pedido Pix ${orderId}: ${error.message}`)
+        console.warn(`Falha ao confirmar pedido Pix ${pix.txid}: ${error.message}`)
       })
     }
 
@@ -617,6 +630,7 @@ app.post('/api/pix/checkout', checkoutLimiter, async (req, res, next) => {
       })
 
       const pix = await createPixCharge({ order, customer: payload.customer })
+      await attachPixTxid({ orderId: order.id, pixTxid: pix.txid })
       res.json({
         orderId: order.id,
         txid: pix.txid,

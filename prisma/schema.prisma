@@ -68,6 +68,7 @@ model Order {
   paymentStatus         PaymentStatus @default(UNPAID)
   stripeSessionId       String?       @unique
   stripePaymentIntentId String?
+  pixTxid               String?       @unique
   customerName          String?
   customerEmail         String?
   customerPhone         String?

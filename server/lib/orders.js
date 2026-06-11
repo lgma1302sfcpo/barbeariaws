@@ -1,8 +1,9 @@
 import { prisma } from './prisma.js'
 
-function resolveOrderWhere({ orderId, stripeSessionId }) {
+function resolveOrderWhere({ orderId, stripeSessionId, pixTxid }) {
   if (orderId) return { id: orderId }
   if (stripeSessionId) return { stripeSessionId }
+  if (pixTxid) return { pixTxid }
   throw new Error('Pedido não encontrado.')
 }
 
@@ -45,6 +46,7 @@ export function serializeOrder(order) {
     paymentStatus: order.paymentStatus,
     stripeSessionId: order.stripeSessionId,
     stripePaymentIntentId: order.stripePaymentIntentId,
+    pixTxid: order.pixTxid,
     customerName: order.customerName,
     customerEmail: order.customerEmail,
     customerPhone: order.customerPhone,
@@ -145,8 +147,18 @@ export async function attachStripeSession({ orderId, stripeSessionId, stripePaym
   return serializeOrder(order)
 }
 
-export async function markOrderPaid({ orderId, stripeSessionId, stripePaymentIntentId, customer, shipping }) {
-  const where = resolveOrderWhere({ orderId, stripeSessionId })
+export async function attachPixTxid({ orderId, pixTxid }) {
+  const order = await prisma.order.update({
+    where: { id: orderId },
+    data: { pixTxid },
+    include: { items: true },
+  })
+
+  return serializeOrder(order)
+}
+
+export async function markOrderPaid({ orderId, stripeSessionId, stripePaymentIntentId, pixTxid, customer, shipping }) {
+  const where = resolveOrderWhere({ orderId, stripeSessionId, pixTxid })
 
   const order = await prisma.$transaction(async (tx) => {
     const current = await tx.order.findUnique({
@@ -263,6 +275,19 @@ export async function listOrders() {
   })
 
   return orders.map(serializeOrder)
+}
+
+export async function readOrder(id) {
+  const order = await prisma.order.findUnique({
+    where: { id },
+    include: { items: true },
+  })
+
+  if (!order) {
+    throw new Error('Pedido não encontrado.')
+  }
+
+  return serializeOrder(order)
 }
 
 export async function updateOrderStatus(id, status) {
