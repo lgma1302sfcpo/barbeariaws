@@ -41,6 +41,8 @@ const appUrl = process.env.APP_URL || `http://localhost:${port}`
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null
+const stripePixEnabled = process.env.STRIPE_ENABLE_PIX === 'true'
+const stripePixExpiresAfterSeconds = Number(process.env.STRIPE_PIX_EXPIRES_AFTER_SECONDS || 3600)
 
 const itemSchema = z.object({
   productId: z.string().min(1),
@@ -581,6 +583,8 @@ app.post('/api/checkout', checkoutLimiter, async (req, res, next) => {
     }
 
     const order = await createPendingOrder({ payload, selectedItems, freight, freightOption, userId: user?.id })
+    const paymentMethodTypes = stripePixEnabled ? ['card', 'pix'] : ['card']
+    const pixExpiresAfterSeconds = Math.min(Math.max(stripePixExpiresAfterSeconds, 10), 1209600)
 
     const lineItems = selectedItems.map(({ product, quantity }) => {
       if (product.stripePriceId?.startsWith('price_')) {
@@ -623,6 +627,16 @@ app.post('/api/checkout', checkoutLimiter, async (req, res, next) => {
       session = await stripe.checkout.sessions.create({
         mode: 'payment',
         line_items: lineItems,
+        payment_method_types: paymentMethodTypes,
+        ...(stripePixEnabled
+          ? {
+              payment_method_options: {
+                pix: {
+                  expires_after_seconds: pixExpiresAfterSeconds,
+                },
+              },
+            }
+          : {}),
         customer_email: payload.customer?.email,
         phone_number_collection: { enabled: true },
         ...(freightOption.type === 'pickup'

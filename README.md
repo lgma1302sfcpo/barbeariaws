@@ -206,6 +206,15 @@ Copie o segredo do webhook para:
 STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 
+Pix no Checkout:
+
+```text
+STRIPE_ENABLE_PIX=true
+STRIPE_PIX_EXPIRES_AFTER_SECONDS=3600
+```
+
+Ative apenas quando o Pix estiver liberado na conta Stripe em **Configurações > Formas de pagamento**. A Stripe exige que todos os itens estejam em `brl`; o projeto já usa `STRIPE_CURRENCY=brl`.
+
 ## Frete
 
 O backend calcula:
