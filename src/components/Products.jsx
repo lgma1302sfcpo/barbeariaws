@@ -89,7 +89,7 @@ export default function Products() {
           <p className="section-eyebrow">Produtos</p>
           <h2 className="section-title">Produtos para manter o visual em dia.</h2>
           <p className="section-copy">
-            Adicione direto ao carrinho. O menu abre automaticamente com frete, total e pagamento.
+            Escolha seus produtos, confira as opcoes de entrega e finalize o pedido com seguranca.
           </p>
         </div>
 

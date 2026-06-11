@@ -544,7 +544,7 @@ export default function Admin() {
             <p className="section-eyebrow">Admin</p>
             <h1 className="text-3xl font-black sm:text-4xl">Admin da barbearia</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-300">
-              Cadastre produtos, ajuste frete e acompanhe pedidos pagos pela Stripe.
+              Cadastre produtos, acompanhe entregas e gerencie os pedidos da loja.
             </p>
           </div>
 
@@ -751,7 +751,7 @@ export default function Admin() {
                       <p className="mt-3 text-sm leading-6 text-zinc-300">{order.freight.label}</p>
                       <p className="text-sm leading-6 text-zinc-400">{order.freight.deliveryEstimate}</p>
                       <p className="text-sm leading-6 text-zinc-400">
-                        {order.destination?.shippingLine1 || order.destination?.street || 'Endereco sera confirmado na Stripe'}
+                        {order.destination?.shippingLine1 || order.destination?.street || 'Endereco sera confirmado no pagamento'}
                       </p>
                       <p className="text-sm leading-6 text-zinc-400">
                         {order.destination?.shippingCity || order.destination?.city} -{' '}

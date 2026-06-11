@@ -14,6 +14,15 @@ function formatCurrency(cents, currency = 'brl') {
   }).format(cents / 100)
 }
 
+function checkoutErrorMessage(message) {
+  const text = String(message || '')
+  if (/stripe|secret|checkout|invalid url/i.test(text)) {
+    return 'Nao foi possivel abrir o pagamento agora. Tente novamente em instantes.'
+  }
+
+  return text || 'Nao foi possivel abrir o pagamento agora. Tente novamente em instantes.'
+}
+
 export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, buttonClassName = 'btn-secondary px-4' }) {
   const [cartOpen, setCartOpen] = useState(false)
   const [cart, setCart] = useState(() => readCart())
@@ -146,7 +155,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
     setError('')
 
     if (!selectedFreight) {
-      setError('Aguarde o calculo do frete ou selecione uma opcao.')
+      setError('Escolha uma opcao de entrega antes de continuar.')
       return
     }
 
@@ -172,11 +181,11 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
       })
 
       const data = await readApiJson(response, 'Nao foi possivel iniciar o pagamento.')
-      if (!response.ok) throw new Error(data.error || 'Nao foi possivel iniciar o pagamento.')
+      if (!response.ok) throw new Error(data.error || 'Nao foi possivel abrir o pagamento. Tente novamente.')
 
       window.location.href = data.url
     } catch (checkoutError) {
-      setError(checkoutError.message)
+      setError(checkoutErrorMessage(checkoutError.message))
     } finally {
       setCheckingOut(false)
     }
@@ -329,7 +338,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
 
           {freightWarning && freightOptions.some((option) => option.type === 'fallback_shipping') && (
             <p className="mt-2 rounded-md border border-amber-300/30 bg-amber-500/10 p-2 text-[11px] leading-4 text-amber-100">
-              Melhor Envio indisponivel: {freightWarning}
+              Cotacao automatica indisponivel no momento. Exibimos uma estimativa para voce continuar.
             </p>
           )}
 
@@ -361,7 +370,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
             disabled={checkingOut || calculatingFreight || !selectedFreight}
           >
             {checkingOut ? <Loader2 className="animate-spin" size={18} /> : <CreditCard size={18} />}
-            Pagar com Stripe
+            Finalizar compra
           </button>
         </div>
       )}

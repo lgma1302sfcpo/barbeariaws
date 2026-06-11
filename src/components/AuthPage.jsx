@@ -45,7 +45,7 @@ export default function AuthPage({ mode = 'login' }) {
               {isRegister ? 'Crie sua conta para comprar com mais agilidade.' : 'Entre para acompanhar suas compras.'}
             </h1>
             <p className="section-copy">
-              Sua conta ajuda a preencher dados no checkout e facilita a consulta dos pedidos no atendimento.
+              Sua conta ajuda a preencher seus dados na compra e facilita o acompanhamento dos pedidos.
             </p>
           </div>
 
