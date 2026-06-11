@@ -215,6 +215,23 @@ STRIPE_PIX_EXPIRES_AFTER_SECONDS=3600
 
 Ative apenas quando o Pix estiver liberado na conta Stripe em **Configurações > Formas de pagamento**. A Stripe exige que todos os itens estejam em `brl`; o projeto já usa `STRIPE_CURRENCY=brl`.
 
+## Efí Pix
+
+Para Pix direto pela Efí, configure no backend/Vercel:
+
+```text
+EFI_PIX_ENABLED=true
+EFI_ENV=production
+EFI_CLIENT_ID=
+EFI_CLIENT_SECRET=
+EFI_PIX_CERTIFICATE_BASE64=
+EFI_PIX_KEY=
+EFI_PIX_EXPIRES_SECONDS=1800
+EFI_PIX_WEBHOOK_URL=https://seu-dominio.com/api/webhooks/efi-pix
+```
+
+O certificado `.p12` deve ser convertido para Base64 e salvo apenas em variável de ambiente. Não commite o certificado no repositório.
+
 ## Frete
 
 O backend calcula:

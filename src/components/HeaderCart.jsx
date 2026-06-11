@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { CreditCard, Loader2, ShoppingCart, Trash2, Truck, X } from 'lucide-react'
+import { Copy, CreditCard, Loader2, QrCode, ShoppingCart, Trash2, Truck, X } from 'lucide-react'
 import { fallbackProducts } from '../data/fallbackProducts.js'
 import { apiUrl, readApiJson } from '../lib/api.js'
 import { authHeaders, readAuth } from '../lib/auth.js'
@@ -32,8 +32,11 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
   const [selectedFreight, setSelectedFreight] = useState('')
   const [calculatingFreight, setCalculatingFreight] = useState(false)
   const [checkingOut, setCheckingOut] = useState(false)
+  const [creatingPix, setCreatingPix] = useState(false)
   const [error, setError] = useState('')
   const [freightWarning, setFreightWarning] = useState('')
+  const [pixPayment, setPixPayment] = useState(null)
+  const [pixCopied, setPixCopied] = useState(false)
   const triggerRef = useRef(null)
   const panelRef = useRef(null)
   const previousFocusRef = useRef(null)
@@ -58,6 +61,8 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
       setCart(readCart())
       setFreightOptions([])
       setSelectedFreight('')
+      setPixPayment(null)
+      setPixCopied(false)
     }
     const openCart = () => setCartOpen(true)
 
@@ -107,6 +112,8 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
 
   const calculateFreight = async () => {
     setError('')
+    setPixPayment(null)
+    setPixCopied(false)
 
     if (cartItems.length === 0) return
 
@@ -189,6 +196,54 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
     } finally {
       setCheckingOut(false)
     }
+  }
+
+  const createPixPayment = async () => {
+    setError('')
+    setPixCopied(false)
+
+    if (!selectedFreight) {
+      setError('Escolha uma opção de entrega antes de continuar.')
+      return
+    }
+
+    setCreatingPix(true)
+    try {
+      const auth = readAuth()
+      const customer = auth.user
+        ? {
+            ...(auth.user.name ? { name: auth.user.name } : {}),
+            ...(auth.user.email ? { email: auth.user.email } : {}),
+            ...(auth.user.phone ? { phone: auth.user.phone } : {}),
+          }
+        : undefined
+      const response = await fetch(apiUrl('/api/pix/checkout'), {
+        method: 'POST',
+        headers: authHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({
+          cep,
+          items: cartItems.map(({ productId, quantity }) => ({ productId, quantity })),
+          freightOptionId: selectedFreight,
+          customer,
+        }),
+      })
+
+      const data = await readApiJson(response, 'Não foi possível gerar o Pix.')
+      if (!response.ok) throw new Error(data.error || 'Não foi possível gerar o Pix.')
+
+      setPixPayment(data)
+    } catch (pixError) {
+      setError(pixError.message)
+    } finally {
+      setCreatingPix(false)
+    }
+  }
+
+  const copyPixCode = async () => {
+    if (!pixPayment?.qrCode) return
+
+    await navigator.clipboard.writeText(pixPayment.qrCode)
+    setPixCopied(true)
   }
 
   const handlePanelKeyDown = (event) => {
@@ -280,6 +335,8 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
                 setCep(event.target.value)
                 setFreightOptions([])
                 setSelectedFreight('')
+                setPixPayment(null)
+                setPixCopied(false)
               }}
               placeholder="00000-000"
               inputMode="numeric"
@@ -363,14 +420,51 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
             </p>
           )}
 
+          {pixPayment && (
+            <div className="mt-4 rounded-md border border-gold-300/25 bg-gold-500/10 p-3 text-center">
+              <p className="text-sm font-black text-white">Pix gerado</p>
+              <p className="mt-1 text-xs leading-5 text-zinc-300">
+                Pague pelo app do seu banco. A confirmação é automática após o pagamento.
+              </p>
+              {pixPayment.qrCodeImage && (
+                <img
+                  src={pixPayment.qrCodeImage}
+                  alt="QR Code Pix"
+                  className="mx-auto mt-3 h-44 w-44 rounded-md bg-white p-2"
+                />
+              )}
+              <button
+                type="button"
+                className="btn-secondary mt-3 min-h-10 w-full py-2 text-xs"
+                onClick={copyPixCode}
+              >
+                <Copy size={15} />
+                {pixCopied ? 'Código copiado' : 'Copiar Pix copia e cola'}
+              </button>
+              <p className="mt-2 text-[11px] leading-4 text-zinc-400">
+                Válido por {Math.round((pixPayment.expiresSeconds || 1800) / 60)} minutos.
+              </p>
+            </div>
+          )}
+
           <button
             type="button"
             className="btn-primary mt-4 w-full"
             onClick={checkout}
-            disabled={checkingOut || calculatingFreight || !selectedFreight}
+            disabled={checkingOut || creatingPix || calculatingFreight || !selectedFreight}
           >
             {checkingOut ? <Loader2 className="animate-spin" size={18} /> : <CreditCard size={18} />}
-            Finalizar compra
+            Pagar com cartão
+          </button>
+
+          <button
+            type="button"
+            className="btn-secondary mt-3 w-full"
+            onClick={createPixPayment}
+            disabled={checkingOut || creatingPix || calculatingFreight || !selectedFreight}
+          >
+            {creatingPix ? <Loader2 className="animate-spin" size={18} /> : <QrCode size={18} />}
+            Pagar com Pix
           </button>
         </div>
       )}

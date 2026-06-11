@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 import Stripe from 'stripe'
 import { z } from 'zod'
 import { calculateFreight } from './lib/freight.js'
+import { configurePixWebhook, createPixCharge, orderIdFromPixTxid } from './lib/efiPix.js'
 import {
   createProduct,
   deactivateProduct,
@@ -553,6 +554,91 @@ app.post('/api/freight', checkoutLimiter, async (req, res, next) => {
     const payload = freightSchema.parse(req.body)
     payload.items = normalizeLineItems(payload.items)
     res.json(await calculateFreight(payload))
+  } catch (error) {
+    next(error)
+  }
+})
+
+app.get('/api/webhooks/efi-pix', (_req, res) => {
+  res.json({ ok: true })
+})
+
+app.post('/api/webhooks/efi-pix', async (req, res, next) => {
+  try {
+    const pixItems = Array.isArray(req.body?.pix) ? req.body.pix : []
+
+    for (const pix of pixItems) {
+      const orderId = orderIdFromPixTxid(pix.txid)
+      if (!orderId) continue
+
+      await markOrderPaid({
+        orderId,
+        customer: {
+          name: pix.pagador?.nome,
+        },
+      }).catch((error) => {
+        console.warn(`Falha ao confirmar pedido Pix ${orderId}: ${error.message}`)
+      })
+    }
+
+    res.json({ received: true })
+  } catch (error) {
+    next(error)
+  }
+})
+
+app.post('/api/pix/checkout', checkoutLimiter, async (req, res, next) => {
+  try {
+    const payload = checkoutSchema.parse(req.body)
+    payload.items = normalizeLineItems(payload.items)
+    const user = await getUserFromRequest(req)
+    if (user && !payload.customer) {
+      payload.customer = {
+        name: user.name,
+        email: user.email,
+        phone: user.phone || undefined,
+      }
+    }
+
+    const selectedItems = await findProductsByItems(payload.items)
+    const freight = await calculateFreight(payload)
+    const freightOption = freight.options.find((option) => option.id === payload.freightOptionId)
+
+    if (!freightOption) {
+      return res.status(400).json({ error: 'Opção de frete inválida para este CEP.' })
+    }
+
+    const order = await createPendingOrder({ payload, selectedItems, freight, freightOption, userId: user?.id })
+
+    try {
+      const webhookUrl = process.env.EFI_PIX_WEBHOOK_URL || `${appUrl}/api/webhooks/efi-pix`
+      await configurePixWebhook(webhookUrl).catch((error) => {
+        console.warn(`Webhook Pix não configurado automaticamente: ${error.message}`)
+      })
+
+      const pix = await createPixCharge({ order, customer: payload.customer })
+      res.json({
+        orderId: order.id,
+        txid: pix.txid,
+        qrCode: pix.qrCode,
+        qrCodeImage: pix.qrCodeImage,
+        expiresSeconds: pix.expiresSeconds,
+        totalCents: order.totalCents,
+        currency: 'brl',
+      })
+    } catch (pixError) {
+      await prisma.order
+        .update({
+          where: { id: order.id },
+          data: {
+            status: 'CANCELED',
+            paymentStatus: 'FAILED',
+            notes: `Falha ao criar Pix Efí: ${pixError.message}`.slice(0, 1000),
+          },
+        })
+        .catch(() => {})
+      throw pixError
+    }
   } catch (error) {
     next(error)
   }
