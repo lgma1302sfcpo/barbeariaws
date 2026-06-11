@@ -24,6 +24,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
   const [calculatingFreight, setCalculatingFreight] = useState(false)
   const [checkingOut, setCheckingOut] = useState(false)
   const [error, setError] = useState('')
+  const [freightWarning, setFreightWarning] = useState('')
   const triggerRef = useRef(null)
   const panelRef = useRef(null)
   const previousFocusRef = useRef(null)
@@ -106,6 +107,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
     }
 
     setCalculatingFreight(true)
+    setFreightWarning('')
     try {
       const response = await fetch(apiUrl('/api/freight'), {
         method: 'POST',
@@ -121,6 +123,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
 
       setFreightOptions(data.options)
       setSelectedFreight(data.options[0]?.id || '')
+      setFreightWarning(data.providerWarning || '')
     } catch (freightError) {
       setError(freightError.message)
     } finally {
@@ -323,6 +326,12 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
               </button>
             )}
           </div>
+
+          {freightWarning && freightOptions.some((option) => option.type === 'fallback_shipping') && (
+            <p className="mt-2 rounded-md border border-amber-300/30 bg-amber-500/10 p-2 text-[11px] leading-4 text-amber-100">
+              Melhor Envio indisponivel: {freightWarning}
+            </p>
+          )}
 
           <div className="mt-4 space-y-2 border-t border-white/10 pt-3 text-sm">
             <div className="flex justify-between text-zinc-300">

@@ -153,6 +153,11 @@ async function calculateWithMelhorEnvio({ cep, selectedItems }) {
   if (!token) return []
 
   const pkg = buildPackage(selectedItems)
+  const originCep = onlyDigits(process.env.ORIGIN_CEP)
+  if (originCep.length !== 8) {
+    throw new Error('ORIGIN_CEP nao configurado ou invalido')
+  }
+
   const baseUrl = process.env.MELHOR_ENVIO_BASE_URL || 'https://www.melhorenvio.com.br'
   const response = await fetchWithTimeout(
     `${baseUrl}/api/v2/me/shipment/calculate`,
@@ -165,7 +170,7 @@ async function calculateWithMelhorEnvio({ cep, selectedItems }) {
         'User-Agent': process.env.MELHOR_ENVIO_USER_AGENT || 'BarbershopWS (barbershopws13@gmail.com)',
       },
       body: JSON.stringify({
-        from: { postal_code: onlyDigits(process.env.ORIGIN_CEP) },
+        from: { postal_code: originCep },
         to: { postal_code: onlyDigits(cep) },
         products: [
           {
@@ -215,6 +220,7 @@ export async function calculateFreight({ cep, items }) {
   const selectedItems = await findProductsByItems(items)
   const destination = await fetchCep(cep)
   const localCity = process.env.LOCAL_DELIVERY_CITY || 'Praia Grande'
+  let providerWarning = null
 
   const options = [
     {
@@ -242,6 +248,7 @@ export async function calculateFreight({ cep, items }) {
     const carrierOptions = await calculateWithMelhorEnvio({ cep, selectedItems })
     options.push(...carrierOptions)
   } catch (error) {
+    providerWarning = error.message
     console.warn(error.message)
   }
 
@@ -261,5 +268,5 @@ export async function calculateFreight({ cep, items }) {
     }
   }
 
-  return { destination, options }
+  return { destination, options, providerWarning }
 }
