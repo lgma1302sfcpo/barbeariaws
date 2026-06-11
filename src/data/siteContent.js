@@ -36,10 +36,10 @@ export const whatsappUrl = `https://wa.me/${siteConfig.whatsappNumber}?text=${en
 )}`
 
 export const navItems = [
+  { label: 'Produtos', href: '#produtos' },
   { label: 'Antes e depois', href: '#antes-depois' },
   { label: 'Galeria', href: '#galeria' },
   { label: 'Preços', href: '#servicos' },
-  { label: 'Produtos', href: '#produtos' },
   { label: 'Localização', href: '#localizacao' },
 ]
 

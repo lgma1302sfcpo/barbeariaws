@@ -50,36 +50,36 @@ export default function Header() {
           : 'bg-gradient-to-b from-black/70 to-transparent'
       }`}
     >
-      <div className="section-shell flex h-20 items-center justify-between gap-4">
-        <a href={homeHref('#topo')} className="flex items-center gap-3" aria-label="Ir para o topo">
+      <div className="section-shell flex h-20 items-center justify-between gap-3">
+        <a href={homeHref('#topo')} className="flex min-w-0 shrink-0 items-center gap-3" aria-label="Ir para o topo">
           <img
             src={siteConfig.logo}
             alt={`Logo ${siteConfig.brandName}`}
             className="h-12 w-12 rounded-md border border-gold-300/20 bg-black object-contain p-1"
           />
-          <div className="leading-none">
-            <span className="block text-sm font-black text-white sm:text-base">{siteConfig.brandName}</span>
+          <div className="hidden leading-none sm:block">
+            <span className="block whitespace-nowrap text-sm font-black text-white sm:text-base">{siteConfig.brandName}</span>
             <span className="mt-1 block text-xs text-gold-300">Praia Grande - SP</span>
           </div>
         </a>
 
-        <nav className="hidden items-center gap-7 xl:flex" aria-label="Navegacao principal">
+        <nav className="hidden min-w-0 flex-1 items-center justify-center gap-3 2xl:flex" aria-label="Navegacao principal">
           {navItems.map((item) => (
             <a
               key={item.href}
               href={homeHref(item.href)}
-              className="text-sm font-semibold text-zinc-300 transition hover:text-gold-300"
+              className="whitespace-nowrap rounded-md px-2 py-2 text-sm font-semibold text-zinc-300 transition hover:text-gold-300"
             >
               {item.label}
             </a>
           ))}
         </nav>
 
-        <HeaderCart homeHref={homeHref} buttonClassName="hidden xl:inline-flex btn-secondary px-4" />
+        <HeaderCart homeHref={homeHref} buttonClassName="hidden lg:inline-flex btn-secondary min-h-11 whitespace-nowrap px-3 py-2" />
 
-        <div className="hidden items-center gap-3 xl:flex">
+        <div className="hidden shrink-0 items-center gap-2 lg:flex">
           {auth.user?.role === 'ADMIN' && (
-            <a href="/admin" className="btn-secondary px-4">
+            <a href="/admin" className="btn-secondary min-h-11 whitespace-nowrap px-3 py-2">
               Admin
             </a>
           )}
@@ -93,7 +93,7 @@ export default function Header() {
               </button>
             </div>
           ) : (
-            <a href="/login" className="btn-secondary px-4">
+            <a href="/login" className="btn-secondary min-h-11 whitespace-nowrap px-3 py-2">
               <UserCircle size={18} />
               Entrar
             </a>
@@ -103,21 +103,21 @@ export default function Header() {
             href={siteConfig.instagramUrl}
             target="_blank"
             rel="noreferrer"
-            className="btn-secondary"
+            className="btn-secondary hidden min-h-11 whitespace-nowrap px-3 py-2 2xl:inline-flex"
             aria-label="Abrir Instagram da Barbershop WS"
           >
             <Instagram size={18} />
             Instagram
           </a>
-          <a href={whatsappUrl} target="_blank" rel="noreferrer" className="btn-whatsapp">
+          <a href={whatsappUrl} target="_blank" rel="noreferrer" className="btn-whatsapp min-h-11 whitespace-nowrap px-3 py-2">
             <WhatsAppIcon size={18} />
-            Chamar no WhatsApp
+            WhatsApp
           </a>
         </div>
 
         <button
           type="button"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-white/10 bg-white/5 text-white xl:hidden"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-white/10 bg-white/5 text-white 2xl:hidden"
           aria-label={isOpen ? 'Fechar menu' : 'Abrir menu'}
           onClick={() => setIsOpen((value) => !value)}
         >
@@ -126,7 +126,7 @@ export default function Header() {
       </div>
 
       {isOpen && (
-        <div className="max-h-[calc(100vh-80px)] overflow-auto border-t border-white/10 bg-ink-950/95 px-5 pb-5 pt-3 backdrop-blur-xl xl:hidden">
+        <div className="max-h-[calc(100vh-80px)] overflow-auto border-t border-white/10 bg-ink-950/95 px-5 pb-5 pt-3 backdrop-blur-xl 2xl:hidden">
           <nav className="mx-auto flex max-w-7xl flex-col gap-2" aria-label="Navegacao mobile">
             {navItems.map((item) => (
               <a
