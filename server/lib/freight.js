@@ -37,6 +37,55 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 5000) {
   }
 }
 
+async function readJsonOrText(response) {
+  const text = await response.text()
+  try {
+    return JSON.parse(text)
+  } catch {
+    return text
+  }
+}
+
+async function getMelhorEnvioAccessToken() {
+  if (process.env.MELHOR_ENVIO_TOKEN) {
+    return process.env.MELHOR_ENVIO_TOKEN
+  }
+
+  const refreshToken = process.env.MELHOR_ENVIO_REFRESH_TOKEN
+  const clientId = process.env.MELHOR_ENVIO_CLIENT_ID
+  const clientSecret = process.env.MELHOR_ENVIO_CLIENT_SECRET
+  if (!refreshToken || !clientId || !clientSecret) {
+    return null
+  }
+
+  const baseUrl = process.env.MELHOR_ENVIO_BASE_URL || 'https://www.melhorenvio.com.br'
+  const response = await fetchWithTimeout(
+    `${baseUrl}/oauth/token`,
+    {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'User-Agent': process.env.MELHOR_ENVIO_USER_AGENT || 'BarbershopWS (barbershopws13@gmail.com)',
+      },
+      body: JSON.stringify({
+        grant_type: 'refresh_token',
+        client_id: clientId,
+        client_secret: clientSecret,
+        refresh_token: refreshToken,
+      }),
+    },
+    freightTimeoutMs,
+  )
+
+  const data = await readJsonOrText(response)
+  if (!response.ok) {
+    throw new Error(`Erro ao renovar token Melhor Envio: ${typeof data === 'string' ? data : JSON.stringify(data)}`)
+  }
+
+  return data.access_token
+}
+
 async function fetchCep(cep) {
   const cleanCep = onlyDigits(cep)
   if (cleanCep.length !== 8) {
@@ -100,7 +149,7 @@ function buildPackage(selectedItems) {
 }
 
 async function calculateWithMelhorEnvio({ cep, selectedItems }) {
-  const token = process.env.MELHOR_ENVIO_TOKEN
+  const token = await getMelhorEnvioAccessToken()
   if (!token) return []
 
   const pkg = buildPackage(selectedItems)
@@ -113,7 +162,7 @@ async function calculateWithMelhorEnvio({ cep, selectedItems }) {
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        'User-Agent': 'BarbershopWS (contato@barbershopws.local)',
+        'User-Agent': process.env.MELHOR_ENVIO_USER_AGENT || 'BarbershopWS (barbershopws13@gmail.com)',
       },
       body: JSON.stringify({
         from: { postal_code: onlyDigits(process.env.ORIGIN_CEP) },

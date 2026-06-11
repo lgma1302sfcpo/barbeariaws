@@ -79,10 +79,34 @@ const loginSchema = z.object({
   password: z.string().min(1),
 })
 
+const melhorEnvioCallbackSchema = z.object({
+  code: z.string().min(1).optional(),
+  error: z.string().optional(),
+  error_description: z.string().optional(),
+})
+
 function createHttpError(statusCode, message) {
   const error = new Error(message)
   error.statusCode = statusCode
   return error
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+async function readApiResponse(response) {
+  const text = await response.text()
+  try {
+    return JSON.parse(text)
+  } catch {
+    return text
+  }
 }
 
 function normalizeLineItems(items) {
@@ -388,6 +412,79 @@ app.get('/api/products/:id', async (req, res, next) => {
     }
 
     res.json(product)
+  } catch (error) {
+    next(error)
+  }
+})
+
+app.get('/api/melhor-envio/callback', async (req, res, next) => {
+  try {
+    const query = melhorEnvioCallbackSchema.parse(req.query)
+    if (query.error) {
+      return res.status(400).send(`Melhor Envio retornou erro: ${escapeHtml(query.error_description || query.error)}`)
+    }
+
+    if (!query.code) {
+      return res.status(400).send('Parametro code nao recebido do Melhor Envio.')
+    }
+
+    const clientId = process.env.MELHOR_ENVIO_CLIENT_ID
+    const clientSecret = process.env.MELHOR_ENVIO_CLIENT_SECRET
+    if (!clientId || !clientSecret) {
+      return res.status(500).send(
+        'Configure MELHOR_ENVIO_CLIENT_ID e MELHOR_ENVIO_CLIENT_SECRET na Vercel e autorize o aplicativo novamente.',
+      )
+    }
+
+    const baseUrl = process.env.MELHOR_ENVIO_BASE_URL || 'https://www.melhorenvio.com.br'
+    const redirectUri = process.env.MELHOR_ENVIO_REDIRECT_URI || `${appUrl}/api/melhor-envio/callback`
+    const response = await fetch(`${baseUrl}/oauth/token`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'User-Agent': process.env.MELHOR_ENVIO_USER_AGENT || 'BarbershopWS (barbershopws13@gmail.com)',
+      },
+      body: JSON.stringify({
+        grant_type: 'authorization_code',
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
+        code: query.code,
+      }),
+    })
+
+    const data = await readApiResponse(response)
+    if (!response.ok) {
+      return res
+        .status(response.status)
+        .send(`Falha ao gerar token Melhor Envio: ${escapeHtml(typeof data === 'string' ? data : JSON.stringify(data))}`)
+    }
+
+    const envBlock = [
+      `MELHOR_ENVIO_TOKEN=${data.access_token || ''}`,
+      `MELHOR_ENVIO_REFRESH_TOKEN=${data.refresh_token || ''}`,
+      `MELHOR_ENVIO_BASE_URL=${baseUrl}`,
+      `MELHOR_ENVIO_REDIRECT_URI=${redirectUri}`,
+    ].join('\n')
+
+    res.type('html').send(`<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Melhor Envio autorizado</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 40px; color: #111; line-height: 1.5; }
+      pre { background: #f4f4f5; border: 1px solid #ddd; padding: 16px; overflow: auto; white-space: pre-wrap; }
+    </style>
+  </head>
+  <body>
+    <h1>Melhor Envio autorizado</h1>
+    <p>Copie estas variaveis para a Vercel. Depois, faca um redeploy.</p>
+    <pre>${escapeHtml(envBlock)}</pre>
+  </body>
+</html>`)
   } catch (error) {
     next(error)
   }
