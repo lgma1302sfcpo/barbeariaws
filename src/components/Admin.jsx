@@ -64,7 +64,7 @@ const statusOptions = [
 ]
 
 const paymentLabels = {
-  UNPAID: 'Nao pago',
+  UNPAID: 'Não pago',
   PAID: 'Pago',
   FAILED: 'Falhou',
   REFUNDED: 'Reembolsado',
@@ -109,7 +109,7 @@ function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(reader.result)
-    reader.onerror = () => reject(new Error('Nao foi possivel ler a imagem.'))
+    reader.onerror = () => reject(new Error('Não foi possível ler a imagem.'))
     reader.readAsDataURL(file)
   })
 }
@@ -166,11 +166,11 @@ function ProductFields({ form, setForm, uploadingImage, onImageSelect }) {
       </label>
 
       <label className="text-sm font-bold text-zinc-300 lg:col-span-2">
-        Descricao
+        Descrição
         <input
           value={form.description}
           onChange={(event) => setField('description', event.target.value)}
-          placeholder="Descricao curta do produto"
+          placeholder="Descrição curta do produto"
           className="mt-2 h-12 w-full rounded-md border border-white/10 bg-black/35 px-3 text-white outline-none transition focus:border-gold-300"
         />
       </label>
@@ -270,11 +270,11 @@ export default function Admin() {
         fetch(apiUrl('/api/admin/orders'), { headers: authHeaders() }),
       ])
 
-      const productsData = await readApiJson(productsResponse, 'Nao foi possivel carregar os produtos.').catch(() => [])
-      const ordersData = await readApiJson(ordersResponse, 'Nao foi possivel carregar os pedidos.').catch(() => [])
+      const productsData = await readApiJson(productsResponse, 'Não foi possível carregar os produtos.').catch(() => [])
+      const ordersData = await readApiJson(ordersResponse, 'Não foi possível carregar os pedidos.').catch(() => [])
 
-      if (!productsResponse.ok) throw new Error(productsData.error || 'Nao foi possivel carregar os produtos.')
-      if (!ordersResponse.ok) throw new Error(ordersData.error || 'Nao foi possivel carregar os pedidos.')
+      if (!productsResponse.ok) throw new Error(productsData.error || 'Não foi possível carregar os produtos.')
+      if (!ordersResponse.ok) throw new Error(ordersData.error || 'Não foi possível carregar os pedidos.')
 
       setProducts(productsData)
       setOrders(ordersData)
@@ -309,9 +309,9 @@ export default function Admin() {
         body: JSON.stringify(loginForm),
       })
 
-      const data = await readApiJson(response, 'Nao foi possivel entrar.').catch(() => ({}))
-      if (!response.ok) throw new Error(data.error || 'Nao foi possivel entrar.')
-      if (data.user?.role !== 'ADMIN') throw new Error('Essa conta nao tem permissao administrativa.')
+      const data = await readApiJson(response, 'Não foi possível entrar.').catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || 'Não foi possível entrar.')
+      if (data.user?.role !== 'ADMIN') throw new Error('Essa conta não tem permissão administrativa.')
 
       writeAuth(data)
       setAuth(data)
@@ -337,7 +337,7 @@ export default function Admin() {
     }
 
     if (file.size > 8 * 1024 * 1024) {
-      setError('A imagem deve ter no maximo 8 MB.')
+      setError('A imagem deve ter no máximo 8 MB.')
       return
     }
 
@@ -350,8 +350,8 @@ export default function Admin() {
         body: JSON.stringify({ fileName: file.name, dataUrl }),
       })
 
-      const data = await readApiJson(response, 'Nao foi possivel enviar a imagem.').catch(() => ({}))
-      if (!response.ok) throw new Error(data.error || 'Nao foi possivel enviar a imagem.')
+      const data = await readApiJson(response, 'Não foi possível enviar a imagem.').catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || 'Não foi possível enviar a imagem.')
 
       setForm((current) => ({ ...current, image: data.url }))
       setMessage('Imagem carregada. Agora salve o produto.')
@@ -385,8 +385,8 @@ export default function Admin() {
         body: JSON.stringify(formToPayload(form)),
       })
 
-      const data = await readApiJson(response, 'Nao foi possivel salvar o produto.').catch(() => ({}))
-      if (!response.ok) throw new Error(data.error || 'Nao foi possivel salvar o produto.')
+      const data = await readApiJson(response, 'Não foi possível salvar o produto.').catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || 'Não foi possível salvar o produto.')
 
       if (isEditing) {
         setProducts((current) => current.map((product) => (product.id === editingId ? data : product)))
@@ -425,8 +425,8 @@ export default function Admin() {
       })
 
       if (!response.ok) {
-        const data = await readApiJson(response, 'Nao foi possivel desativar o produto.').catch(() => ({}))
-        throw new Error(data.error || 'Nao foi possivel desativar o produto.')
+        const data = await readApiJson(response, 'Não foi possível desativar o produto.').catch(() => ({}))
+        throw new Error(data.error || 'Não foi possível desativar o produto.')
       }
 
       setProducts((current) =>
@@ -461,8 +461,8 @@ export default function Admin() {
         body: JSON.stringify({ status }),
       })
 
-      const data = await readApiJson(response, 'Nao foi possivel atualizar o pedido.').catch(() => ({}))
-      if (!response.ok) throw new Error(data.error || 'Nao foi possivel atualizar o pedido.')
+      const data = await readApiJson(response, 'Não foi possível atualizar o pedido.').catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || 'Não foi possível atualizar o pedido.')
 
       setOrders((current) => current.map((order) => (order.id === orderId ? data : order)))
       setMessage('Pedido atualizado.')
@@ -591,7 +591,7 @@ export default function Admin() {
 
               <button type="submit" className="btn-primary mt-5 w-full" disabled={saving}>
                 {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-                {isEditing ? 'Salvar alteracoes' : 'Cadastrar produto'}
+                {isEditing ? 'Salvar alterações' : 'Cadastrar produto'}
               </button>
             </form>
 
@@ -751,7 +751,7 @@ export default function Admin() {
                       <p className="mt-3 text-sm leading-6 text-zinc-300">{order.freight.label}</p>
                       <p className="text-sm leading-6 text-zinc-400">{order.freight.deliveryEstimate}</p>
                       <p className="text-sm leading-6 text-zinc-400">
-                        {order.destination?.shippingLine1 || order.destination?.street || 'Endereco sera confirmado no pagamento'}
+                        {order.destination?.shippingLine1 || order.destination?.street || 'Endereço será confirmado no pagamento'}
                       </p>
                       <p className="text-sm leading-6 text-zinc-400">
                         {order.destination?.shippingCity || order.destination?.city} -{' '}

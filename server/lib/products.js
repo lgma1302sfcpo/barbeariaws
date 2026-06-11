@@ -33,7 +33,7 @@ const productSchema = z.object({
     .nullable()
     .transform((value) => value || null)
     .refine((value) => !value || value.startsWith('price_'), {
-      message: 'Stripe Price ID deve comecar com price_.',
+      message: 'Stripe Price ID deve começar com price_.',
     }),
   weightKg: z.coerce.number().positive().max(100),
   widthCm: z.coerce.number().positive().max(300),
@@ -174,7 +174,7 @@ export async function createProduct(input) {
 export async function updateProduct(id, input) {
   const current = await prisma.product.findUnique({ where: { id } })
   if (!current) {
-    throw new Error('Produto nao encontrado')
+    throw new Error('Produto não encontrado.')
   }
 
   const product = normalizeProduct({ ...serializeProduct(current), ...input, id })
@@ -230,7 +230,7 @@ export async function findProductsByItems(items) {
       : await readFallbackProductById(item.productId)
 
     if (!serializedProduct) {
-      throw new Error(`Produto nao encontrado: ${item.productId}`)
+      throw new Error(`Produto não encontrado: ${item.productId}`)
     }
 
     if (

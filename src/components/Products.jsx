@@ -29,14 +29,14 @@ export default function Products() {
     async function loadProducts() {
       try {
         const response = await fetch(apiUrl('/api/products'))
-        if (!response.ok) throw new Error('Nao foi possivel carregar os produtos.')
+        if (!response.ok) throw new Error('Não foi possível carregar os produtos.')
 
-        const data = await readApiJson(response, 'Nao foi possivel carregar os produtos.')
+        const data = await readApiJson(response, 'Não foi possível carregar os produtos.')
         setProducts(data.length > 0 ? data : fallbackProducts)
       } catch {
         setProducts(fallbackProducts)
         if (import.meta.env.DEV) {
-          setError('Backend indisponivel. Exibindo produto de exemplo; rode npm run dev:server para checkout e frete.')
+          setError('Serviço indisponível. Exibindo produto de exemplo no ambiente de desenvolvimento.')
         }
       } finally {
         setLoadingProducts(false)
@@ -69,7 +69,7 @@ export default function Products() {
     const current = Number(quantities[product.id] || 0)
 
     if (maxQuantity <= 0) {
-      setError('Produto sem estoque disponivel.')
+      setError('Produto sem estoque disponível.')
       return
     }
 
@@ -89,7 +89,7 @@ export default function Products() {
           <p className="section-eyebrow">Produtos</p>
           <h2 className="section-title">Produtos para manter o visual em dia.</h2>
           <p className="section-copy">
-            Escolha seus produtos, confira as opcoes de entrega e finalize o pedido com seguranca.
+            Escolha seus produtos, confira as opções de entrega e finalize o pedido com segurança.
           </p>
         </div>
 

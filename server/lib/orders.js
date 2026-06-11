@@ -3,7 +3,7 @@ import { prisma } from './prisma.js'
 function resolveOrderWhere({ orderId, stripeSessionId }) {
   if (orderId) return { id: orderId }
   if (stripeSessionId) return { stripeSessionId }
-  throw new Error('Pedido nao encontrado')
+  throw new Error('Pedido não encontrado.')
 }
 
 function buildStripeOrderData({ stripeSessionId, stripePaymentIntentId, customer, shipping, paidAt }) {
@@ -155,7 +155,7 @@ export async function markOrderPaid({ orderId, stripeSessionId, stripePaymentInt
     })
 
     if (!current) {
-      throw new Error('Pedido nao encontrado')
+      throw new Error('Pedido não encontrado.')
     }
 
     const stripeData = buildStripeOrderData({
@@ -200,7 +200,7 @@ export async function markOrderPaid({ orderId, stripeSessionId, stripePaymentInt
       })
 
       if (!product) {
-        throw new Error(`Produto nao encontrado: ${productId}`)
+        throw new Error(`Produto não encontrado: ${productId}`)
       }
 
       if (product.stock === null || product.stock === undefined) continue
@@ -236,7 +236,7 @@ export async function markOrderPaymentFailed({ orderId, stripeSessionId }) {
     })
 
     if (!current) {
-      throw new Error('Pedido nao encontrado')
+      throw new Error('Pedido não encontrado.')
     }
 
     if (current.paymentStatus === 'PAID') {

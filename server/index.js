@@ -118,7 +118,7 @@ function normalizeLineItems(items) {
 
   return Array.from(quantities.entries()).map(([productId, quantity]) => {
     if (quantity > 20) {
-      throw createHttpError(400, 'Quantidade maxima por produto e 20.')
+      throw createHttpError(400, 'A quantidade máxima por produto é 20.')
     }
 
     return { productId, quantity }
@@ -204,7 +204,7 @@ const corsMiddleware = (req, res, next) =>
         return callback(null, true)
       }
 
-      return callback(createHttpError(403, 'Origin nao permitida pelo CORS.'))
+      return callback(createHttpError(403, 'Origem não permitida pelo CORS.'))
     },
   })(req, res, next)
 const authLimiter = createRateLimiter({
@@ -251,7 +251,7 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
     try {
       event = stripe.webhooks.constructEvent(req.body, signature, webhookSecret)
     } catch (error) {
-      return res.status(400).send(`Webhook invalido: ${error.message}`)
+      return res.status(400).send(`Webhook inválido: ${error.message}`)
     }
 
     const session = event.data.object
@@ -329,7 +329,7 @@ app.post('/api/auth/login', authLimiter, async (req, res, next) => {
     const user = await prisma.user.findUnique({ where: { email } })
 
     if (!user || !(await verifyPassword(payload.password, user.passwordHash))) {
-      return res.status(401).json({ error: 'E-mail ou senha invalidos' })
+      return res.status(401).json({ error: 'E-mail ou senha inválidos.' })
     }
 
     res.json({ user: serializeUser(user), token: createAuthToken(user) })
@@ -364,7 +364,7 @@ app.post('/api/admin/uploads/product-image', requireAdmin, async (req, res, next
     const buffer = Buffer.from(match[2], 'base64')
 
     if (buffer.length > 8 * 1024 * 1024) {
-      return res.status(400).json({ error: 'A imagem deve ter no maximo 8 MB.' })
+      return res.status(400).json({ error: 'A imagem deve ter no máximo 8 MB.' })
     }
 
     if (process.env.VERCEL) {
@@ -408,7 +408,7 @@ app.get('/api/products/:id', async (req, res, next) => {
   try {
     const product = await readProductById(req.params.id)
     if (!product) {
-      return res.status(404).json({ error: 'Produto nao encontrado' })
+      return res.status(404).json({ error: 'Produto não encontrado.' })
     }
 
     res.json(product)
@@ -425,7 +425,7 @@ app.get('/api/melhor-envio/callback', async (req, res, next) => {
     }
 
     if (!query.code) {
-      return res.status(400).send('Parametro code nao recebido do Melhor Envio.')
+      return res.status(400).send('Parâmetro code não recebido do Melhor Envio.')
     }
 
     const clientId = process.env.MELHOR_ENVIO_CLIENT_ID
@@ -577,7 +577,7 @@ app.post('/api/checkout', checkoutLimiter, async (req, res, next) => {
     const freightOption = freight.options.find((option) => option.id === payload.freightOptionId)
 
     if (!freightOption) {
-      return res.status(400).json({ error: 'Opcao de frete invalida para este CEP' })
+      return res.status(400).json({ error: 'Opção de frete inválida para este CEP.' })
     }
 
     const order = await createPendingOrder({ payload, selectedItems, freight, freightOption, userId: user?.id })
@@ -679,7 +679,7 @@ if (!process.env.VERCEL) {
 app.use((error, _req, res, _next) => {
   console.error(error)
   if (error instanceof z.ZodError) {
-    return res.status(400).json({ error: 'Dados invalidos', details: error.flatten() })
+    return res.status(400).json({ error: 'Dados inválidos.', details: error.flatten() })
   }
 
   if (error.statusCode) {
@@ -690,8 +690,8 @@ app.use((error, _req, res, _next) => {
     return res.status(409).json({ error: 'Registro ja cadastrado' })
   }
 
-  if (error.code === 'P2025' || error.message === 'Produto nao encontrado') {
-    return res.status(404).json({ error: 'Registro nao encontrado' })
+  if (error.code === 'P2025' || error.message === 'Produto nao encontrado' || error.message === 'Produto não encontrado.') {
+    return res.status(404).json({ error: 'Registro não encontrado.' })
   }
 
   if (error.message?.startsWith('Estoque insuficiente')) {

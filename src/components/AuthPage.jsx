@@ -23,8 +23,8 @@ export default function AuthPage({ mode = 'login' }) {
         body: JSON.stringify(isRegister ? form : { email: form.email, password: form.password }),
       })
 
-      const data = await readApiJson(response, 'Nao foi possivel entrar.').catch(() => ({}))
-      if (!response.ok) throw new Error(data.error || 'Nao foi possivel entrar.')
+      const data = await readApiJson(response, 'Não foi possível entrar.').catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || 'Não foi possível entrar.')
 
       writeAuth(data)
       window.location.href = data.user?.role === 'ADMIN' ? '/admin' : '/#produtos'
@@ -116,7 +116,7 @@ export default function AuthPage({ mode = 'login' }) {
             </form>
 
             <p className="mt-5 text-sm text-zinc-400">
-              {isRegister ? 'Ja tem conta?' : 'Ainda nao tem conta?'}{' '}
+              {isRegister ? 'Já tem conta?' : 'Ainda não tem conta?'}{' '}
               <a href={isRegister ? '/login' : '/cadastro'} className="font-bold text-gold-300 transition hover:text-gold-100">
                 {isRegister ? 'Entrar' : 'Criar cadastro'}
               </a>

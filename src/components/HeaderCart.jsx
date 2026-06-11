@@ -17,10 +17,10 @@ function formatCurrency(cents, currency = 'brl') {
 function checkoutErrorMessage(message) {
   const text = String(message || '')
   if (/stripe|secret|checkout|invalid url/i.test(text)) {
-    return 'Nao foi possivel abrir o pagamento agora. Tente novamente em instantes.'
+    return 'Não foi possível abrir o pagamento agora. Tente novamente em instantes.'
   }
 
-  return text || 'Nao foi possivel abrir o pagamento agora. Tente novamente em instantes.'
+  return text || 'Não foi possível abrir o pagamento agora. Tente novamente em instantes.'
 }
 
 export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, buttonClassName = 'btn-secondary px-4' }) {
@@ -42,8 +42,8 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
     async function loadProducts() {
       try {
         const response = await fetch(apiUrl('/api/products'))
-        if (!response.ok) throw new Error('Nao foi possivel carregar produtos.')
-        const data = await readApiJson(response, 'Nao foi possivel carregar produtos.')
+        if (!response.ok) throw new Error('Não foi possível carregar os produtos.')
+        const data = await readApiJson(response, 'Não foi possível carregar os produtos.')
         setProducts(data.length > 0 ? data : fallbackProducts)
       } catch {
         setProducts(fallbackProducts)
@@ -111,7 +111,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
     if (cartItems.length === 0) return
 
     if (cep.replace(/\D/g, '').length !== 8) {
-      setError('Informe um CEP valido.')
+      setError('Informe um CEP válido.')
       return
     }
 
@@ -127,8 +127,8 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
         }),
       })
 
-      const data = await readApiJson(response, 'Nao foi possivel calcular o frete.')
-      if (!response.ok) throw new Error(data.error || 'Nao foi possivel calcular o frete.')
+      const data = await readApiJson(response, 'Não foi possível calcular o frete.')
+      if (!response.ok) throw new Error(data.error || 'Não foi possível calcular o frete.')
 
       setFreightOptions(data.options)
       setSelectedFreight(data.options[0]?.id || '')
@@ -155,7 +155,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
     setError('')
 
     if (!selectedFreight) {
-      setError('Escolha uma opcao de entrega antes de continuar.')
+      setError('Escolha uma opção de entrega antes de continuar.')
       return
     }
 
@@ -180,8 +180,8 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
         }),
       })
 
-      const data = await readApiJson(response, 'Nao foi possivel iniciar o pagamento.')
-      if (!response.ok) throw new Error(data.error || 'Nao foi possivel abrir o pagamento. Tente novamente.')
+      const data = await readApiJson(response, 'Não foi possível iniciar o pagamento.')
+      if (!response.ok) throw new Error(data.error || 'Não foi possível abrir o pagamento. Tente novamente.')
 
       window.location.href = data.url
     } catch (checkoutError) {
@@ -338,7 +338,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
 
           {freightWarning && freightOptions.some((option) => option.type === 'fallback_shipping') && (
             <p className="mt-2 rounded-md border border-amber-300/30 bg-amber-500/10 p-2 text-[11px] leading-4 text-amber-100">
-              Cotacao automatica indisponivel no momento. Exibimos uma estimativa para voce continuar.
+              Cotação automática indisponível no momento. Exibimos uma estimativa para você continuar.
             </p>
           )}
 

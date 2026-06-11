@@ -28,7 +28,7 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 5000) {
     })
   } catch (error) {
     if (error.name === 'AbortError') {
-      throw new Error('Tempo limite excedido ao consultar servico externo')
+      throw new Error('Tempo limite excedido ao consultar serviço externo.')
     }
 
     throw error
@@ -89,17 +89,17 @@ async function getMelhorEnvioAccessToken() {
 async function fetchCep(cep) {
   const cleanCep = onlyDigits(cep)
   if (cleanCep.length !== 8) {
-    throw new Error('CEP invalido')
+    throw new Error('CEP inválido.')
   }
 
   const response = await fetchWithTimeout(`https://viacep.com.br/ws/${cleanCep}/json/`, {}, cepTimeoutMs)
   if (!response.ok) {
-    throw new Error('Nao foi possivel consultar o CEP')
+    throw new Error('Não foi possível consultar o CEP.')
   }
 
   const data = await response.json()
   if (data.erro) {
-    throw new Error('CEP nao encontrado')
+    throw new Error('CEP não encontrado.')
   }
 
   return {
@@ -155,7 +155,7 @@ async function calculateWithMelhorEnvio({ cep, selectedItems }) {
   const pkg = buildPackage(selectedItems)
   const originCep = onlyDigits(process.env.ORIGIN_CEP)
   if (originCep.length !== 8) {
-    throw new Error('ORIGIN_CEP nao configurado ou invalido')
+    throw new Error('CEP de origem não configurado ou inválido.')
   }
 
   const baseUrl = process.env.MELHOR_ENVIO_BASE_URL || 'https://www.melhorenvio.com.br'
@@ -229,7 +229,7 @@ export async function calculateFreight({ cep, items }) {
       label: 'Retirada na barbearia',
       amountCents: 0,
       currency,
-      deliveryEstimate: 'Retirada combinada no WhatsApp',
+      deliveryEstimate: 'Retirada combinada pelo WhatsApp.',
     },
   ]
 
@@ -240,7 +240,7 @@ export async function calculateFreight({ cep, items }) {
       label: `Delivery ${localCity}`,
       amountCents: Number(process.env.LOCAL_DELIVERY_FEE_CENTS || 1000),
       currency,
-      deliveryEstimate: 'Entrega local em Praia Grande',
+      deliveryEstimate: 'Entrega local em Praia Grande.',
     })
   }
 
@@ -263,7 +263,7 @@ export async function calculateFreight({ cep, items }) {
         label: `Envio para ${destination.state}`,
         amountCents,
         currency,
-        deliveryEstimate: 'Frete estimado. Confirme prazo pelo WhatsApp.',
+        deliveryEstimate: 'Frete estimado. Confirme o prazo pelo WhatsApp.',
       })
     }
   }

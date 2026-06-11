@@ -22,9 +22,9 @@ export default function ProductDetail({ productId }) {
     async function loadProduct() {
       try {
         const response = await fetch(apiUrl(`/api/products/${productId}`))
-        const data = await readApiJson(response, 'Produto nao encontrado.')
+        const data = await readApiJson(response, 'Produto não encontrado.')
 
-        if (!response.ok) throw new Error(data.error || 'Produto nao encontrado.')
+        if (!response.ok) throw new Error(data.error || 'Produto não encontrado.')
 
         setProduct(data)
         const cartQuantity = Number(readCart()[data.id] || 0)
@@ -58,7 +58,7 @@ export default function ProductDetail({ productId }) {
     if (!product) return
 
     if (maxProductQuantity(product) <= 0) {
-      setError('Produto sem estoque disponivel.')
+      setError('Produto sem estoque disponível.')
       return
     }
 
