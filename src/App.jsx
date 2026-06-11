@@ -93,11 +93,11 @@ export default function App() {
       <Header />
       <main>
         <Hero />
+        <Products />
         <BeforeAfter />
         <Gallery />
         <Differentials />
         <Services />
-        <Products />
         <Testimonials />
         <Location />
       </main>
