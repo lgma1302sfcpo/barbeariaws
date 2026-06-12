@@ -1,7 +1,7 @@
 import { findProductsByItems } from './products.js'
 
 const currency = process.env.STRIPE_CURRENCY || 'brl'
-const cepTimeoutMs = Number(process.env.CEP_TIMEOUT_MS || 5000)
+const cepTimeoutMs = Number(process.env.CEP_TIMEOUT_MS || 8000)
 const freightTimeoutMs = Number(process.env.FREIGHT_TIMEOUT_MS || 7000)
 const defaultFallbackRates = {
   SP: 1800,
@@ -92,23 +92,49 @@ async function fetchCep(cep) {
     throw new Error('CEP inválido.')
   }
 
-  const response = await fetchWithTimeout(`https://viacep.com.br/ws/${cleanCep}/json/`, {}, cepTimeoutMs)
-  if (!response.ok) {
-    throw new Error('Não foi possível consultar o CEP.')
+  const errors = []
+
+  try {
+    const response = await fetchWithTimeout(`https://viacep.com.br/ws/${cleanCep}/json/`, {}, cepTimeoutMs)
+    if (!response.ok) {
+      throw new Error('Não foi possível consultar o CEP.')
+    }
+
+    const data = await response.json()
+    if (data.erro) {
+      throw new Error('CEP não encontrado.')
+    }
+
+    return {
+      cep: cleanCep,
+      city: data.localidade,
+      state: data.uf,
+      street: data.logradouro,
+      neighborhood: data.bairro,
+    }
+  } catch (error) {
+    errors.push(error)
   }
 
-  const data = await response.json()
-  if (data.erro) {
-    throw new Error('CEP não encontrado.')
+  try {
+    const response = await fetchWithTimeout(`https://brasilapi.com.br/api/cep/v1/${cleanCep}`, {}, cepTimeoutMs)
+    if (!response.ok) {
+      throw new Error('Não foi possível consultar o CEP.')
+    }
+
+    const data = await response.json()
+    return {
+      cep: cleanCep,
+      city: data.city,
+      state: data.state,
+      street: data.street,
+      neighborhood: data.neighborhood,
+    }
+  } catch (error) {
+    errors.push(error)
   }
 
-  return {
-    cep: cleanCep,
-    city: data.localidade,
-    state: data.uf,
-    street: data.logradouro,
-    neighborhood: data.bairro,
-  }
+  throw errors[errors.length - 1] || new Error('Não foi possível consultar o CEP.')
 }
 
 function getFallbackRates() {
@@ -209,7 +235,7 @@ async function calculateWithMelhorEnvio({ cep, selectedItems }) {
       amountCents: Math.round(Number(rate.price) * 100),
       currency,
       deliveryEstimate: rate.delivery_time
-        ? `${rate.delivery_time} dia(s) uteis`
+        ? `${rate.delivery_time} dia(s) úteis`
         : 'Prazo informado pela transportadora',
       provider: 'melhor-envio',
       providerServiceId: rate.id,
