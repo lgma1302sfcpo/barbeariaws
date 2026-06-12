@@ -80,7 +80,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
   }, [])
 
   useEffect(() => {
-    document.body.classList.toggle('overflow-hidden', cartOpen)
+    document.body.classList.toggle('overflow-hidden', cartOpen || Boolean(pixPayment))
 
     if (cartOpen) {
       previousFocusRef.current = document.activeElement
@@ -92,7 +92,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
     return () => {
       document.body.classList.remove('overflow-hidden')
     }
-  }, [cartOpen])
+  }, [cartOpen, pixPayment])
 
   const cartItems = useMemo(
     () =>
@@ -112,11 +112,15 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
   const selectedFreightOption = freightOptions.find((option) => option.id === selectedFreight)
   const totalCents = subtotalCents + (selectedFreightOption?.amountCents || 0)
 
-  const calculateFreight = async () => {
-    setError('')
+  const resetPix = () => {
     setPixPayment(null)
     setPixCopied(false)
     setPixStatus('')
+  }
+
+  const calculateFreight = async () => {
+    setError('')
+    resetPix()
 
     if (cartItems.length === 0) return
 
@@ -173,7 +177,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
           clearCart()
         }
       } catch {
-        // Keep the Pix visible while the webhook/status request catches up.
+        // Mantém o modal aberto enquanto a confirmação chega.
       }
     }, 4000)
 
@@ -358,9 +362,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
                 setCep(event.target.value)
                 setFreightOptions([])
                 setSelectedFreight('')
-                setPixPayment(null)
-                setPixCopied(false)
-                setPixStatus('')
+                resetPix()
               }}
               placeholder="00000-000"
               inputMode="numeric"
@@ -379,45 +381,43 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
         )}
       </div>
 
-      {(cartItems.length > 0 || pixPayment) && (
+      {cartItems.length > 0 && (
         <div className="border-t border-white/10 p-5">
-          {cartItems.length > 0 && (
-            <div className="mt-3 space-y-2">
-              {calculatingFreight ? (
-                <p className="inline-flex items-center gap-2 text-xs font-bold text-zinc-300">
-                  <Loader2 className="animate-spin text-gold-300" size={15} />
-                  Calculando frete
-                </p>
-              ) : freightOptions.length > 0 ? (
-                freightOptions.map((option) => (
-                  <label
-                    key={option.id}
-                    className="flex cursor-pointer gap-2 rounded-md border border-white/10 bg-black/25 p-2 transition hover:border-gold-300/45"
-                  >
-                    <input
-                      type="radio"
-                      name={`header-freight-${mode}`}
-                      checked={selectedFreight === option.id}
-                      onChange={() => setSelectedFreight(option.id)}
-                      className="mt-1 accent-gold-300"
-                    />
-                    <span className="flex-1">
-                      <span className="flex items-center justify-between gap-2 text-xs font-black text-white">
-                        {option.label}
-                        <span className="text-gold-100">{formatCurrency(option.amountCents, option.currency)}</span>
-                      </span>
-                      <span className="mt-1 block text-[11px] leading-4 text-zinc-400">{option.deliveryEstimate}</span>
+          <div className="mt-3 space-y-2">
+            {calculatingFreight ? (
+              <p className="inline-flex items-center gap-2 text-xs font-bold text-zinc-300">
+                <Loader2 className="animate-spin text-gold-300" size={15} />
+                Calculando frete
+              </p>
+            ) : freightOptions.length > 0 ? (
+              freightOptions.map((option) => (
+                <label
+                  key={option.id}
+                  className="flex cursor-pointer gap-2 rounded-md border border-white/10 bg-black/25 p-2 transition hover:border-gold-300/45"
+                >
+                  <input
+                    type="radio"
+                    name={`header-freight-${mode}`}
+                    checked={selectedFreight === option.id}
+                    onChange={() => setSelectedFreight(option.id)}
+                    className="mt-1 accent-gold-300"
+                  />
+                  <span className="flex-1">
+                    <span className="flex items-center justify-between gap-2 text-xs font-black text-white">
+                      {option.label}
+                      <span className="text-gold-100">{formatCurrency(option.amountCents, option.currency)}</span>
                     </span>
-                  </label>
-                ))
-              ) : (
-                <button type="button" className="btn-secondary min-h-10 w-full py-2 text-xs" onClick={calculateFreight}>
-                  <Truck size={16} />
-                  Calcular frete
-                </button>
-              )}
-            </div>
-          )}
+                    <span className="mt-1 block text-[11px] leading-4 text-zinc-400">{option.deliveryEstimate}</span>
+                  </span>
+                </label>
+              ))
+            ) : (
+              <button type="button" className="btn-secondary min-h-10 w-full py-2 text-xs" onClick={calculateFreight}>
+                <Truck size={16} />
+                Calcular frete
+              </button>
+            )}
+          </div>
 
           {freightWarning && freightOptions.some((option) => option.type === 'fallback_shipping') && (
             <p className="mt-2 rounded-md border border-amber-300/30 bg-amber-500/10 p-2 text-[11px] leading-4 text-amber-100">
@@ -425,22 +425,20 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
             </p>
           )}
 
-          {cartItems.length > 0 && (
-            <div className="mt-4 space-y-2 border-t border-white/10 pt-3 text-sm">
-              <div className="flex justify-between text-zinc-300">
-                <span>Produtos</span>
-                <span>{formatCurrency(subtotalCents)}</span>
-              </div>
-              <div className="flex justify-between text-zinc-300">
-                <span>Frete</span>
-                <span>{formatCurrency(selectedFreightOption?.amountCents || 0)}</span>
-              </div>
-              <div className="flex justify-between text-lg font-black text-white">
-                <span>Total</span>
-                <span>{formatCurrency(totalCents)}</span>
-              </div>
+          <div className="mt-4 space-y-2 border-t border-white/10 pt-3 text-sm">
+            <div className="flex justify-between text-zinc-300">
+              <span>Produtos</span>
+              <span>{formatCurrency(subtotalCents)}</span>
             </div>
-          )}
+            <div className="flex justify-between text-zinc-300">
+              <span>Frete</span>
+              <span>{formatCurrency(selectedFreightOption?.amountCents || 0)}</span>
+            </div>
+            <div className="flex justify-between text-lg font-black text-white">
+              <span>Total</span>
+              <span>{formatCurrency(totalCents)}</span>
+            </div>
+          </div>
 
           {error && (
             <p className="mt-3 rounded-md border border-red-400/30 bg-red-500/10 p-2 text-xs text-red-100">
@@ -448,74 +446,25 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
             </p>
           )}
 
-          {pixPayment && (
-            <div className="mt-4 overflow-hidden rounded-lg border border-gold-300/25 bg-black/35">
-              <div className="border-b border-white/10 bg-gold-500/10 p-3">
-                <p className="inline-flex items-center gap-2 text-sm font-black text-white">
-                  <QrCode size={16} className="text-gold-300" />
-                  {pixStatus === 'PAID' ? 'Pagamento confirmado' : 'Pix gerado'}
-                </p>
-                <p className="mt-1 text-xs leading-5 text-zinc-300">
-                  {pixStatus === 'PAID'
-                    ? 'Recebemos seu pagamento. Seu pedido já foi registrado.'
-                    : 'Escaneie o QR Code ou copie o código abaixo no app do seu banco.'}
-                </p>
-              </div>
+          <button
+            type="button"
+            className="btn-primary mt-4 w-full"
+            onClick={checkout}
+            disabled={checkingOut || creatingPix || calculatingFreight || !selectedFreight || pixStatus === 'PAID'}
+          >
+            {checkingOut ? <Loader2 className="animate-spin" size={18} /> : <CreditCard size={18} />}
+            Pagar com cartão
+          </button>
 
-              {pixStatus === 'PAID' ? (
-                <div className="p-4 text-center">
-                  <p className="rounded-md border border-emerald-400/30 bg-emerald-500/10 p-3 text-sm font-bold text-emerald-100">
-                    Pedido pago com sucesso.
-                  </p>
-                </div>
-              ) : (
-                <div className="p-4">
-                  {pixPayment.qrCodeImage && (
-                    <img
-                      src={pixPayment.qrCodeImage}
-                      alt="QR Code Pix"
-                      className="mx-auto h-48 w-48 rounded-lg bg-white p-2 shadow-lg"
-                    />
-                  )}
-                  <button
-                    type="button"
-                    className="btn-secondary mt-4 min-h-10 w-full py-2 text-xs"
-                    onClick={copyPixCode}
-                  >
-                    <Copy size={15} />
-                    {pixCopied ? 'Código copiado' : 'Copiar Pix copia e cola'}
-                  </button>
-                  <p className="mt-2 text-center text-[11px] leading-4 text-zinc-400">
-                    Válido por {Math.round((pixPayment.expiresSeconds || 1800) / 60)} minutos. A tela atualiza automaticamente após a confirmação.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {cartItems.length > 0 && (
-            <>
-              <button
-                type="button"
-                className="btn-primary mt-4 w-full"
-                onClick={checkout}
-                disabled={checkingOut || creatingPix || calculatingFreight || !selectedFreight || pixStatus === 'PAID'}
-              >
-                {checkingOut ? <Loader2 className="animate-spin" size={18} /> : <CreditCard size={18} />}
-                Pagar com cartão
-              </button>
-
-              <button
-                type="button"
-                className="btn-secondary mt-3 w-full"
-                onClick={createPixPayment}
-                disabled={checkingOut || creatingPix || calculatingFreight || !selectedFreight || pixStatus === 'PAID'}
-              >
-                {creatingPix ? <Loader2 className="animate-spin" size={18} /> : <QrCode size={18} />}
-                Pagar com Pix
-              </button>
-            </>
-          )}
+          <button
+            type="button"
+            className="btn-secondary mt-3 w-full"
+            onClick={createPixPayment}
+            disabled={checkingOut || creatingPix || calculatingFreight || !selectedFreight || pixStatus === 'PAID'}
+          >
+            {creatingPix ? <Loader2 className="animate-spin" size={18} /> : <QrCode size={18} />}
+            Pagar com Pix
+          </button>
         </div>
       )}
     </div>
@@ -560,6 +509,75 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
       >
         {panel}
       </aside>
+
+      {pixPayment && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/75 p-4 backdrop-blur-xl">
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label="Pagamento Pix"
+            className="w-full max-w-md overflow-hidden rounded-lg border border-gold-300/30 bg-ink-950 shadow-2xl"
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-white/10 bg-gold-500/10 p-5">
+              <div>
+                <p className="inline-flex items-center gap-2 text-base font-black text-white">
+                  <QrCode size={18} className="text-gold-300" />
+                  {pixStatus === 'PAID' ? 'Pagamento confirmado' : 'Pague com Pix'}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-zinc-300">
+                  {pixStatus === 'PAID'
+                    ? 'Recebemos seu pagamento. Seu pedido já foi registrado.'
+                    : 'Escaneie o QR Code ou copie o código abaixo no app do seu banco.'}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-white/10 bg-white/5 text-white transition hover:border-gold-300/45"
+                onClick={() => {
+                  if (pixStatus === 'PAID') setCartOpen(false)
+                  resetPix()
+                }}
+                aria-label="Fechar Pix"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {pixStatus === 'PAID' ? (
+              <div className="p-5 text-center">
+                <p className="rounded-md border border-emerald-400/30 bg-emerald-500/10 p-4 text-sm font-bold text-emerald-100">
+                  Pedido pago com sucesso.
+                </p>
+                <button
+                  type="button"
+                  className="btn-primary mt-4 w-full"
+                  onClick={() => {
+                    setCartOpen(false)
+                    resetPix()
+                  }}
+                >
+                  Concluir
+                </button>
+              </div>
+            ) : (
+              <div className="p-5">
+                <div className="rounded-lg border border-white/10 bg-white p-3">
+                  {pixPayment.qrCodeImage && (
+                    <img src={pixPayment.qrCodeImage} alt="QR Code Pix" className="mx-auto h-64 w-64 object-contain" />
+                  )}
+                </div>
+                <button type="button" className="btn-primary mt-4 w-full" onClick={copyPixCode}>
+                  <Copy size={16} />
+                  {pixCopied ? 'Código copiado' : 'Copiar Pix copia e cola'}
+                </button>
+                <p className="mt-3 text-center text-xs leading-5 text-zinc-400">
+                  Válido por {Math.round((pixPayment.expiresSeconds || 1800) / 60)} minutos. Esta tela atualiza automaticamente após a confirmação.
+                </p>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
     </>
   )
 }
