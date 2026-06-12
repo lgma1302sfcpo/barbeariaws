@@ -61,9 +61,9 @@ const checkoutSchema = freightSchema.extend({
   freightOptionId: z.string().min(1),
   customer: z
     .object({
-      name: z.string().optional().nullable(),
-      email: z.string().email().optional(),
-      phone: z.string().optional().nullable(),
+      name: z.string().trim().optional().nullable(),
+      email: z.string().trim().email().optional(),
+      phone: z.string().trim().optional().nullable(),
     })
     .optional(),
 })
@@ -94,6 +94,21 @@ function createHttpError(statusCode, message) {
   const error = new Error(message)
   error.statusCode = statusCode
   return error
+}
+
+function normalizePhone(value) {
+  return String(value || '').replace(/\D/g, '')
+}
+
+function assertGuestCustomer(customer) {
+  if (
+    !customer?.name ||
+    customer.name.trim().length < 2 ||
+    !customer?.email ||
+    normalizePhone(customer.phone).length < 10
+  ) {
+    throw createHttpError(400, 'Informe nome, e-mail e WhatsApp para continuar com o pedido.')
+  }
 }
 
 function escapeHtml(value) {
@@ -612,6 +627,7 @@ app.post('/api/pix/checkout', checkoutLimiter, async (req, res, next) => {
         phone: user.phone || undefined,
       }
     }
+    if (!user) assertGuestCustomer(payload.customer)
 
     const selectedItems = await findProductsByItems(payload.items)
     const freight = await calculateFreight(payload)
@@ -674,6 +690,8 @@ app.post('/api/checkout', checkoutLimiter, async (req, res, next) => {
         phone: user.phone || undefined,
       }
     }
+    if (!user) assertGuestCustomer(payload.customer)
+
     const selectedItems = await findProductsByItems(payload.items)
     const freight = await calculateFreight(payload)
     const freightOption = freight.options.find((option) => option.id === payload.freightOptionId)

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Copy, CreditCard, Loader2, QrCode, ShoppingCart, Trash2, Truck, X } from 'lucide-react'
 import { fallbackProducts } from '../data/fallbackProducts.js'
 import { apiUrl, readApiJson } from '../lib/api.js'
-import { authHeaders, readAuth } from '../lib/auth.js'
+import { authEventName, authHeaders, readAuth } from '../lib/auth.js'
 import { cartEventName, cartOpenEventName, clearCart, readCart, setProductQuantity } from '../lib/cart.js'
 
 const defaultCep = '11700-120'
@@ -23,6 +23,18 @@ function checkoutErrorMessage(message) {
   return text || 'Não foi possível abrir o pagamento agora. Tente novamente em instantes.'
 }
 
+function normalizePhone(value) {
+  return String(value || '').replace(/\D/g, '')
+}
+
+function isValidGuestCustomer(customer) {
+  return (
+    customer.name.trim().length >= 2 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customer.email.trim()) &&
+    normalizePhone(customer.phone).length >= 10
+  )
+}
+
 export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, buttonClassName = 'btn-secondary px-4' }) {
   const [cartOpen, setCartOpen] = useState(false)
   const [cart, setCart] = useState(() => readCart())
@@ -38,6 +50,8 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
   const [pixPayment, setPixPayment] = useState(null)
   const [pixCopied, setPixCopied] = useState(false)
   const [pixStatus, setPixStatus] = useState('')
+  const [auth, setAuth] = useState(() => readAuth())
+  const [guestCustomer, setGuestCustomer] = useState({ name: '', email: '', phone: '' })
   const triggerRef = useRef(null)
   const panelRef = useRef(null)
   const previousFocusRef = useRef(null)
@@ -55,6 +69,18 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
     }
 
     loadProducts()
+  }, [])
+
+  useEffect(() => {
+    const syncAuth = () => setAuth(readAuth())
+
+    window.addEventListener(authEventName, syncAuth)
+    window.addEventListener('storage', syncAuth)
+
+    return () => {
+      window.removeEventListener(authEventName, syncAuth)
+      window.removeEventListener('storage', syncAuth)
+    }
   }, [])
 
   useEffect(() => {
@@ -111,6 +137,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
   const subtotalCents = cartItems.reduce((total, item) => total + item.product.priceCents * item.quantity, 0)
   const selectedFreightOption = freightOptions.find((option) => option.id === selectedFreight)
   const totalCents = subtotalCents + (selectedFreightOption?.amountCents || 0)
+  const isGuestCheckout = !auth.user
 
   const resetPix = () => {
     setPixPayment(null)
@@ -177,31 +204,50 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
           clearCart()
         }
       } catch {
-        // Mantém o modal aberto enquanto a confirmação chega.
+        // Mantem o modal aberto enquanto a confirmacao chega.
       }
     }, 4000)
 
     return () => window.clearInterval(intervalId)
   }, [pixPayment?.orderId, pixStatus])
 
+  const buildCustomerPayload = () => {
+    if (auth.user) {
+      return {
+        ...(auth.user.name ? { name: auth.user.name } : {}),
+        ...(auth.user.email ? { email: auth.user.email } : {}),
+        ...(auth.user.phone ? { phone: auth.user.phone } : {}),
+      }
+    }
+
+    return {
+      name: guestCustomer.name.trim(),
+      email: guestCustomer.email.trim(),
+      phone: guestCustomer.phone.trim(),
+    }
+  }
+
+  const ensureCanCheckout = () => {
+    if (!selectedFreight) {
+      setError('Escolha uma opção de entrega antes de continuar.')
+      return false
+    }
+
+    if (isGuestCheckout && !isValidGuestCustomer(guestCustomer)) {
+      setError('Preencha nome, e-mail e WhatsApp para continuar com o pedido.')
+      return false
+    }
+
+    return true
+  }
+
   const checkout = async () => {
     setError('')
 
-    if (!selectedFreight) {
-      setError('Escolha uma opção de entrega antes de continuar.')
-      return
-    }
+    if (!ensureCanCheckout()) return
 
     setCheckingOut(true)
     try {
-      const auth = readAuth()
-      const customer = auth.user
-        ? {
-            ...(auth.user.name ? { name: auth.user.name } : {}),
-            ...(auth.user.email ? { email: auth.user.email } : {}),
-            ...(auth.user.phone ? { phone: auth.user.phone } : {}),
-          }
-        : undefined
       const response = await fetch(apiUrl('/api/checkout'), {
         method: 'POST',
         headers: authHeaders({ 'Content-Type': 'application/json' }),
@@ -209,7 +255,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
           cep,
           items: cartItems.map(({ productId, quantity }) => ({ productId, quantity })),
           freightOptionId: selectedFreight,
-          customer,
+          customer: buildCustomerPayload(),
         }),
       })
 
@@ -228,21 +274,10 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
     setError('')
     setPixCopied(false)
 
-    if (!selectedFreight) {
-      setError('Escolha uma opção de entrega antes de continuar.')
-      return
-    }
+    if (!ensureCanCheckout()) return
 
     setCreatingPix(true)
     try {
-      const auth = readAuth()
-      const customer = auth.user
-        ? {
-            ...(auth.user.name ? { name: auth.user.name } : {}),
-            ...(auth.user.email ? { email: auth.user.email } : {}),
-            ...(auth.user.phone ? { phone: auth.user.phone } : {}),
-          }
-        : undefined
       const response = await fetch(apiUrl('/api/pix/checkout'), {
         method: 'POST',
         headers: authHeaders({ 'Content-Type': 'application/json' }),
@@ -250,7 +285,7 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
           cep,
           items: cartItems.map(({ productId, quantity }) => ({ productId, quantity })),
           freightOptionId: selectedFreight,
-          customer,
+          customer: buildCustomerPayload(),
         }),
       })
 
@@ -304,6 +339,11 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
     }
   }
 
+  const updateGuestCustomer = (field) => (event) => {
+    setGuestCustomer((current) => ({ ...current, [field]: event.target.value }))
+    setError('')
+  }
+
   const panel = (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-white/10 p-5">
@@ -354,28 +394,75 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
         </div>
 
         {cartItems.length > 0 && (
-          <label className="mt-5 block text-xs font-bold text-zinc-300">
-            CEP para retirada ou entrega
-            <input
-              value={cep}
-              onChange={(event) => {
-                setCep(event.target.value)
-                setFreightOptions([])
-                setSelectedFreight('')
-                resetPix()
-              }}
-              placeholder="00000-000"
-              inputMode="numeric"
-              className="mt-2 h-11 w-full rounded-md border border-white/10 bg-black/35 px-3 text-sm text-white outline-none transition focus:border-gold-300"
-            />
-          </label>
+          <>
+            {isGuestCheckout && (
+              <div className="mt-5 rounded-lg border border-white/10 bg-black/25 p-4">
+                <p className="text-sm font-black text-white">Dados para o pedido</p>
+                <p className="mt-1 text-xs leading-5 text-zinc-400">
+                  Usamos esses dados para identificar seu pagamento e avisar sobre a entrega.
+                </p>
+                <div className="mt-4 space-y-3">
+                  <label className="block text-xs font-bold text-zinc-300">
+                    Nome completo
+                    <input
+                      value={guestCustomer.name}
+                      onChange={updateGuestCustomer('name')}
+                      autoComplete="name"
+                      className="mt-2 h-11 w-full rounded-md border border-white/10 bg-black/35 px-3 text-sm text-white outline-none transition focus:border-gold-300"
+                    />
+                  </label>
+                  <label className="block text-xs font-bold text-zinc-300">
+                    E-mail
+                    <input
+                      value={guestCustomer.email}
+                      onChange={updateGuestCustomer('email')}
+                      type="email"
+                      autoComplete="email"
+                      className="mt-2 h-11 w-full rounded-md border border-white/10 bg-black/35 px-3 text-sm text-white outline-none transition focus:border-gold-300"
+                    />
+                  </label>
+                  <label className="block text-xs font-bold text-zinc-300">
+                    WhatsApp
+                    <input
+                      value={guestCustomer.phone}
+                      onChange={updateGuestCustomer('phone')}
+                      inputMode="tel"
+                      autoComplete="tel"
+                      placeholder="(13) 99999-9999"
+                      className="mt-2 h-11 w-full rounded-md border border-white/10 bg-black/35 px-3 text-sm text-white outline-none transition focus:border-gold-300"
+                    />
+                  </label>
+                </div>
+              </div>
+            )}
+
+            <label className="mt-5 block text-xs font-bold text-zinc-300">
+              CEP para retirada ou entrega
+              <input
+                value={cep}
+                onChange={(event) => {
+                  setCep(event.target.value)
+                  setFreightOptions([])
+                  setSelectedFreight('')
+                  resetPix()
+                }}
+                placeholder="00000-000"
+                inputMode="numeric"
+                className="mt-2 h-11 w-full rounded-md border border-white/10 bg-black/35 px-3 text-sm text-white outline-none transition focus:border-gold-300"
+              />
+            </label>
+          </>
         )}
 
         {cartItems.length === 0 && pixStatus !== 'PAID' && (
-          <a href={homeHref('#produtos')} className="btn-secondary mt-4 w-full" onClick={() => {
-            setCartOpen(false)
-            onNavigate?.()
-          }}>
+          <a
+            href={homeHref('#produtos')}
+            className="btn-secondary mt-4 w-full"
+            onClick={() => {
+              setCartOpen(false)
+              onNavigate?.()
+            }}
+          >
             Ver produtos
           </a>
         )}
@@ -399,7 +486,10 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
                     type="radio"
                     name={`header-freight-${mode}`}
                     checked={selectedFreight === option.id}
-                    onChange={() => setSelectedFreight(option.id)}
+                    onChange={() => {
+                      setSelectedFreight(option.id)
+                      resetPix()
+                    }}
                     className="mt-1 accent-gold-300"
                   />
                   <span className="flex-1">
