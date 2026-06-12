@@ -511,12 +511,12 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
       </aside>
 
       {pixPayment && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/75 p-4 backdrop-blur-xl">
+        <div className="fixed inset-0 z-[120] flex min-h-dvh items-start justify-center overflow-y-auto bg-black/45 px-4 py-5 backdrop-blur-xl sm:items-center sm:py-8">
           <section
             role="dialog"
             aria-modal="true"
             aria-label="Pagamento Pix"
-            className="w-full max-w-md overflow-hidden rounded-lg border border-gold-300/30 bg-ink-950 shadow-2xl"
+            className="max-h-[calc(100dvh-2.5rem)] w-full max-w-md overflow-y-auto rounded-lg border border-gold-300/30 bg-ink-950 shadow-2xl"
           >
             <div className="flex items-start justify-between gap-4 border-b border-white/10 bg-gold-500/10 p-5">
               <div>
@@ -563,7 +563,11 @@ export default function HeaderCart({ homeHref, mode = 'desktop', onNavigate, but
               <div className="p-5">
                 <div className="rounded-lg border border-white/10 bg-white p-3">
                   {pixPayment.qrCodeImage && (
-                    <img src={pixPayment.qrCodeImage} alt="QR Code Pix" className="mx-auto h-64 w-64 object-contain" />
+                    <img
+                      src={pixPayment.qrCodeImage}
+                      alt="QR Code Pix"
+                      className="mx-auto h-56 w-56 object-contain sm:h-64 sm:w-64"
+                    />
                   )}
                 </div>
                 <button type="button" className="btn-primary mt-4 w-full" onClick={copyPixCode}>
