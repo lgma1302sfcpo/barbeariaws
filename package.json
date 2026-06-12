@@ -11,7 +11,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
-    "build": "vite build",
+    "build": "prisma generate && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "start": "node server/index.js"
   },
