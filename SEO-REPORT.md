@@ -92,9 +92,9 @@ Após alterações nos dados públicos, execute novamente o build e publique a v
 
 ## 9. Próximas ações para posicionamento
 
-1. Publicar as alterações na Vercel. `vercel.json` determina o build completo `npm run build`, com saída `dist` e inclusão do template da função SEO.
-2. Conferir em produção `/`, `/robots.txt`, `/sitemap.xml`, `/produto/gel-fixador`, `/login`, `/admin` e uma URL inexistente. Validar status, canonical e ausência de bloqueio de indexação nas páginas públicas.
-3. Adicionar/verificar o site no Google Search Console; enviar `https://barbeariaws.vercel.app/sitemap.xml` e solicitar inspeção da home.
+1. Publicação concluída na Vercel em 05/10/2026, a partir do commit `7ee76e6` enviado para `main`. `vercel.json` determina o build completo `npm run build`, com saída `dist` e inclusão do template da função SEO.
+2. Verificação em produção concluída: `/`, `/robots.txt`, `/sitemap.xml` e `/produto/gel-fixador` retornam 200; login/admin retornam 200 com noindex; uma URL inexistente retorna 404/noindex. Canonical e tag de verificação estão presentes, e o sitemap responde como XML com home e produto público.
+3. Propriedade `https://barbeariaws.vercel.app/` criada e verificada no Google Search Console por tag HTML. Manter a metatag `google-site-verification` em `index.html`. Sitemap enviado e reenviado em 05/10/2026: o Google confirmou o envio, mas o relatório ainda apresenta “Não foi possível buscar o sitemap”. O endpoint público responde 200 com XML válido, inclusive com User-Agent Googlebot; isso não comprova a leitura pelo rastreador real. A causa da falha do Search Console não foi determinada; conferir o processamento posteriormente. A inspeção informa que a home já está indexada. A solicitação de atualização foi recusada porque a cota diária da conta foi excedida; repetir no dia seguinte.
 4. Validar o schema publicado no [Rich Results Test](https://search.google.com/test/rich-results) e no [Schema Markup Validator](https://validator.schema.org/). A validação local cobre a estrutura, mas não substitui esses serviços após o deploy.
 5. Medir desempenho publicado com PageSpeed Insights/Search Console. Não foram calculadas notas Lighthouse ou métricas de campo LCP/CLS/INP nesta revisão.
 6. Publicar trabalhos reais com textos úteis, manter serviços/preços atualizados e buscar referências legítimas em páginas locais da empresa/parceiros.
@@ -108,7 +108,7 @@ Após alterações nos dados públicos, execute novamente o build e publique a v
 - Valores de frete, Stripe, Efí Pix, banco de dados, autenticação, CORS e permissões não foram reformulados. Não foram realizadas compras ou escritas no banco durante os testes.
 - No preview Vite sem backend na porta 4242, o catálogo utilizou o fallback existente e o frete ficou indisponível. A adição/remoção do carrinho foi verificada; disponibilidade dos provedores de frete e pagamento em produção não foi certificada por esses testes.
 - Não existe script de lint, configuração ESLint ou verificação TypeScript dedicada para este frontend JSX. Não foi adicionada uma ferramenta nova apenas para reportar um resultado.
-- A publicação existente não pôde ser inspecionada pela ferramenta de pesquisa web nesta sessão; as alterações ainda são locais. Headers/regras externas da Vercel e o rastreamento efetivo do Google precisam da verificação posterior ao deploy.
+- Publicação inspecionada por HTTP e pelo navegador após o push: metadados, robots, sitemap XML, produto e respostas de páginas internas/404 estão disponíveis em produção. A home publicada não apresentou erros de console nas observações feitas. A leitura do sitemap pelo Google ainda apresenta falha, e a atualização manual de indexação está limitada pela cota diária.
 - A FAQ é conteúdo visível, sem schema de FAQ rich results: o [Google descontinuou esse recurso em 2026](https://developers.google.com/search/updates#june-2026).
 
 ### Auditoria final executada
@@ -125,3 +125,5 @@ Após alterações nos dados públicos, execute novamente o build e publique a v
 | Performance objetiva dos arquivos | PNGs de cortes: 3.916.507 → 334.384 bytes (~91,5% menor). Logo: 403.381 → 5.570 bytes (~98,6% menor). JS inicial: ~219 KB / 66,43 KB gzip, com páginas internas separadas. |
 
 O bloqueio temporário do arquivo de engine Prisma durante um build foi resolvido encerrando o servidor de testes, que mantinha a DLL aberta. O build final completo passou.
+
+A versão exata do commit `7ee76e6` também foi extraída para uma pasta isolada e validada com build Vite, pré-renderização e os 14 testes de SEO aprovados. As alterações locais anteriores em `HeaderCart.jsx` e os arquivos de `public/assets/posts/` foram preservados e não incluídos no commit de SEO. O bundle desse commit tem aproximadamente 221 KB / 66,90 KB gzip de JavaScript inicial.
