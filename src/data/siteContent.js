@@ -15,25 +15,7 @@ import {
   Waves,
 } from 'lucide-react'
 
-export const siteConfig = {
-  brandName: 'Barbershop WS',
-  logo: '/assets/logo-square.png',
-  heroImage: '/assets/barbershop-fachada.jpg',
-  video: '/assets/barbershop-video.mp4',
-  whatsappNumber: '5513988235036',
-  whatsappMessage: 'Olá! Vim pelo site e quero saber mais sobre os serviços da Barbershop WS.',
-  instagramUrl: 'https://www.instagram.com/barbershop_ws_013/',
-  address: 'Duque de Caxias, 1026, Boqueirão, Praia Grande - SP',
-  openHours: 'Aberto a partir das 09h',
-  mapsUrl:
-    'https://www.google.com/maps/search/?api=1&query=Duque%20de%20Caxias%2C%201026%2C%20Boqueir%C3%A3o%2C%20Praia%20Grande%20-%20SP',
-  mapsEmbedUrl:
-    'https://www.google.com/maps?q=Duque%20de%20Caxias%2C%201026%2C%20Boqueir%C3%A3o%2C%20Praia%20Grande%20-%20SP&output=embed',
-}
-
-export const whatsappUrl = `https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(
-  siteConfig.whatsappMessage,
-)}`
+export { siteConfig, whatsappUrl } from './business.js'
 
 export const navItems = [
   { label: 'Produtos', href: '#produtos' },
@@ -113,8 +95,8 @@ export const services = [
 ]
 
 export const comparison = {
-  beforeImage: '/assets/antes.jpeg',
-  afterImage: '/assets/depois.jpeg',
+  beforeImage: '/assets/optimized/antes.webp',
+  afterImage: '/assets/optimized/depois.webp',
   beforeLabel: 'Antes',
   afterLabel: 'Depois',
 }
@@ -128,33 +110,33 @@ export const videoHighlight = {
 export const galleryItems = [
   {
     type: 'image',
-    src: '/assets/cortes/corte-01.png',
+    src: '/assets/optimized/corte-01.webp',
     title: 'Degradê com risco',
     alt: 'Corte masculino degradê com risco lateral',
   },
   {
     type: 'image',
-    src: '/assets/cortes/corte-02.png',
+    src: '/assets/optimized/corte-02.webp',
     title: 'Freestyle lateral',
     alt: 'Corte masculino com desenho freestyle lateral',
   },
   {
     type: 'image',
-    src: '/assets/cortes/corte-03.png',
+    src: '/assets/optimized/corte-03.webp',
     title: 'Luzes no cacheado',
     alt: 'Corte cacheado com luzes e acabamento',
   },
   {
     type: 'image',
-    src: '/assets/cortes/corte-04.png',
+    src: '/assets/optimized/corte-04.webp',
     title: 'Penteado alinhado',
     alt: 'Corte masculino penteado e alinhado',
   },
   {
     type: 'image',
-    src: '/assets/barbershop-fachada.jpg',
+    src: '/assets/optimized/barbershop-fachada.webp',
     title: 'Fachada premium',
-    alt: 'Fachada da Barbershop WS',
+    alt: 'Fachada da Barbershop WS no Boqueirão, em Praia Grande',
     className: 'object-[50%_22%]',
   },
 ]

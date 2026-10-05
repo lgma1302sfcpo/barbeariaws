@@ -1,5 +1,5 @@
-import { Clock, ExternalLink, MapPin, Navigation } from 'lucide-react'
-import { siteConfig } from '../data/siteContent.js'
+import { Clock, ExternalLink, MapPin, Navigation, Phone } from 'lucide-react'
+import { displayPhone, siteConfig, whatsappUrl } from '../data/business.js'
 
 export default function Location() {
   return (
@@ -8,9 +8,9 @@ export default function Location() {
         <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-stretch">
           <div data-reveal>
             <p className="section-eyebrow">Horário e localização</p>
-            <h2 className="section-title">Passe na barbearia e renove o visual hoje.</h2>
+            <h2 className="section-title">Barbearia no Boqueirão, em Praia Grande – SP.</h2>
             <p className="section-copy">
-              Estamos no Boqueirão, em Praia Grande, com atendimento aberto a partir das 09h.
+              A Barbershop WS fica no Boqueirão, em Praia Grande, na Baixada Santista. Confira o endereço e abra a rota no Google Maps para planejar sua visita.
             </p>
 
             <div className="mt-8 space-y-4">
@@ -18,7 +18,7 @@ export default function Location() {
                 <MapPin className="mt-1 shrink-0 text-gold-300" size={23} />
                 <div>
                   <p className="text-sm font-bold uppercase text-zinc-400">Endereço</p>
-                  <p className="mt-1 font-semibold leading-7 text-white">{siteConfig.address}</p>
+                  <address className="mt-1 font-semibold not-italic leading-7 text-white">{siteConfig.address}</address>
                 </div>
               </div>
               <div className="flex gap-4 rounded-lg border border-white/10 bg-white/[0.045] p-4">
@@ -26,13 +26,22 @@ export default function Location() {
                 <div>
                   <p className="text-sm font-bold uppercase text-zinc-400">Horário</p>
                   <p className="mt-1 font-semibold leading-7 text-white">{siteConfig.openHours}</p>
+                  <p className="mt-1 text-sm leading-6 text-zinc-300">Confirme pelo WhatsApp os dias de atendimento e o horário de fechamento.</p>
+                </div>
+              </div>
+              <div className="flex gap-4 rounded-lg border border-white/10 bg-white/[0.045] p-4">
+                <Phone className="mt-1 shrink-0 text-gold-300" size={23} />
+                <div>
+                  <p className="text-sm font-bold uppercase text-zinc-400">Telefone e WhatsApp</p>
+                  <a href={`tel:+${siteConfig.whatsappNumber}`} className="mt-1 inline-block py-2 font-semibold text-white">{displayPhone}</a>
+                  <a href={whatsappUrl} target="_blank" rel="noreferrer" className="block py-2 text-sm font-bold text-gold-100">Consultar horários pelo WhatsApp</a>
                 </div>
               </div>
             </div>
 
             <a href={siteConfig.mapsUrl} target="_blank" rel="noreferrer" className="btn-primary mt-7">
               <Navigation size={19} />
-              Abrir no Google Maps
+              Como chegar
             </a>
           </div>
 
@@ -50,7 +59,7 @@ export default function Location() {
               <div className="max-w-sm rounded-lg border border-gold-300/25 bg-black/70 p-5 backdrop-blur">
                 <MapPin size={34} className="text-gold-300" />
                 <p className="mt-4 text-2xl font-black text-white">Boqueirão</p>
-                <p className="mt-2 text-sm leading-6 text-zinc-300">Duque de Caxias, 1026, Praia Grande - SP</p>
+                <p className="mt-2 text-sm leading-6 text-zinc-300">{siteConfig.address}</p>
               </div>
               <a
                 href={siteConfig.mapsUrl}

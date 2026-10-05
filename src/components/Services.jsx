@@ -8,9 +8,9 @@ export default function Services() {
           <p className="section-eyebrow">Serviços e valores</p>
           <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
             <div>
-              <h2 className="section-title">Visual alinhado, finalização precisa e presença no detalhe.</h2>
+              <h2 className="section-title">Corte masculino, barba e serviços em Praia Grande.</h2>
               <p className="section-copy">
-                Serviços essenciais para quem quer manter o estilo em dia, com atendimento direto e acabamento premium.
+                Escolha corte, barba ou o combo corte + barba. Também oferecemos alisante, luzes, platinado e pigmentação, além dos cuidados de acabamento. Confira os valores e fale com seu barbeiro no Boqueirão sobre o visual que deseja.
               </p>
             </div>
           </div>

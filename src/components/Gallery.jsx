@@ -1,22 +1,32 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Camera, Expand, Play, X } from 'lucide-react'
 import { galleryItems, videoHighlight } from '../data/siteContent.js'
+import imageDimensions from '../data/imageDimensions.json'
 
 export default function Gallery() {
   const [activeItem, setActiveItem] = useState(null)
+  const closeRef = useRef(null)
 
   useEffect(() => {
     if (!activeItem) return undefined
 
+    const previousFocus = document.activeElement
+    const previousOverflow = document.body.style.overflow
+    closeRef.current?.focus()
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') setActiveItem(null)
+      if (event.key === 'Tab') {
+        event.preventDefault()
+        closeRef.current?.focus()
+      }
     }
 
     document.body.style.overflow = 'hidden'
     window.addEventListener('keydown', handleKeyDown)
 
     return () => {
-      document.body.style.overflow = ''
+      document.body.style.overflow = previousOverflow
+      previousFocus?.focus()
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [activeItem])
@@ -52,7 +62,8 @@ export default function Gallery() {
               className="aspect-video h-full w-full object-cover"
               controls
               playsInline
-              preload="metadata"
+              preload="none"
+              aria-label="Vídeo de apresentação da Barbershop WS"
             />
           </div>
         </div>
@@ -66,12 +77,15 @@ export default function Gallery() {
                 index === 0 ? 'sm:col-span-2 sm:row-span-2' : ''
               } ${index === 1 ? 'lg:col-span-2' : ''}`}
               onClick={() => setActiveItem(item)}
+              aria-label={`Ampliar foto: ${item.title}`}
               data-reveal
               style={{ transitionDelay: `${index * 45}ms` }}
             >
               <img
                 src={item.src}
                 alt={item.alt}
+                {...imageDimensions[item.src]}
+                decoding="async"
                 className={`h-full w-full object-cover transition duration-500 group-hover:scale-105 ${item.className || ''}`}
                 loading="lazy"
               />
@@ -95,6 +109,7 @@ export default function Gallery() {
           className="fixed inset-0 z-[70] flex items-center justify-center bg-black/90 p-4 backdrop-blur-md"
           role="dialog"
           aria-modal="true"
+          aria-label={`Foto ampliada: ${activeItem.title}`}
           onClick={() => setActiveItem(null)}
         >
           <div
@@ -102,6 +117,7 @@ export default function Gallery() {
             onClick={(event) => event.stopPropagation()}
           >
             <button
+              ref={closeRef}
               type="button"
               className="absolute right-3 top-3 z-10 inline-flex h-11 w-11 items-center justify-center rounded-md border border-white/10 bg-black/70 text-white transition hover:text-gold-300"
               aria-label="Fechar galeria"
@@ -112,6 +128,7 @@ export default function Gallery() {
             <img
               src={activeItem.src}
               alt={activeItem.alt}
+              {...imageDimensions[activeItem.src]}
               className={`max-h-[88vh] w-full bg-black object-contain ${activeItem.className || ''}`}
             />
           </div>

@@ -9,8 +9,20 @@ import WhatsAppIcon from './shared/WhatsAppIcon.jsx'
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [auth, setAuth] = useState(() => readAuth())
-  const isHome = window.location.pathname === '/'
+  const [auth, setAuth] = useState({})
+  const isHome = typeof window === 'undefined' || window.location.pathname === '/'
+
+  useEffect(() => {
+    if (!isOpen) return undefined
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false)
+        document.getElementById('mobile-menu-trigger')?.focus()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [isOpen])
   const homeHref = (href) => (isHome ? href : `/${href}`)
 
   useEffect(() => {
@@ -22,6 +34,7 @@ export default function Header() {
 
   useEffect(() => {
     const syncAuth = () => setAuth(readAuth())
+    syncAuth()
 
     window.addEventListener(authEventName, syncAuth)
 
@@ -55,6 +68,8 @@ export default function Header() {
           <img
             src={siteConfig.logo}
             alt={`Logo ${siteConfig.brandName}`}
+            width="256"
+            height="256"
             className="h-12 w-12 rounded-md border border-gold-300/20 bg-black object-contain p-1"
           />
           <div className="hidden leading-none sm:block">
@@ -118,7 +133,10 @@ export default function Header() {
         <button
           type="button"
           className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-white/10 bg-white/5 text-white 2xl:hidden"
+          id="mobile-menu-trigger"
           aria-label={isOpen ? 'Fechar menu' : 'Abrir menu'}
+          aria-expanded={isOpen}
+          aria-controls="mobile-menu"
           onClick={() => setIsOpen((value) => !value)}
         >
           {isOpen ? <X size={22} /> : <Menu size={22} />}
@@ -126,7 +144,7 @@ export default function Header() {
       </div>
 
       {isOpen && (
-        <div className="max-h-[calc(100vh-80px)] overflow-auto border-t border-white/10 bg-ink-950/95 px-5 pb-5 pt-3 backdrop-blur-xl 2xl:hidden">
+        <div id="mobile-menu" className="max-h-[calc(100vh-80px)] overflow-auto border-t border-white/10 bg-ink-950/95 px-5 pb-5 pt-3 backdrop-blur-xl 2xl:hidden">
           <nav className="mx-auto flex max-w-7xl flex-col gap-2" aria-label="Navegacao mobile">
             {navItems.map((item) => (
               <a

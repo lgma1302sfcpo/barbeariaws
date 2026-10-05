@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 
 export default function CountUp({ value, duration = 1400 }) {
-  const [displayValue, setDisplayValue] = useState(0)
+  const [displayValue, setDisplayValue] = useState(value)
   const ref = useRef(null)
 
   useEffect(() => {
     const node = ref.current
     if (!node) return undefined
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return undefined
 
     let frameId = 0
     const observer = new IntersectionObserver(
@@ -38,5 +39,5 @@ export default function CountUp({ value, duration = 1400 }) {
     }
   }, [duration, value])
 
-  return <span ref={ref}>{displayValue.toLocaleString('pt-BR')}</span>
+  return <span ref={ref} className="inline-block tabular-nums" style={{ minWidth: `${String(value).length + 1}ch` }}>{displayValue.toLocaleString('pt-BR')}</span>
 }

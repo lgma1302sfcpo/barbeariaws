@@ -1,5 +1,5 @@
 import { Instagram } from 'lucide-react'
-import { siteConfig, whatsappUrl } from '../data/siteContent.js'
+import { displayPhone, siteConfig, whatsappUrl } from '../data/business.js'
 import WhatsAppIcon from './shared/WhatsAppIcon.jsx'
 
 export default function Footer() {
@@ -8,8 +8,8 @@ export default function Footer() {
       <div className="section-shell border-t border-white/10 py-12">
         <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center" data-reveal>
           <div>
-            <p className="section-eyebrow">CTA final</p>
-            <h2 className="text-3xl font-black text-white sm:text-4xl">Pronto para mudar o visual?</h2>
+            <p className="section-eyebrow">Fale com a Barbershop WS</p>
+            <h2 className="text-3xl font-black text-white sm:text-4xl">Agende seu corte ou barba pelo WhatsApp.</h2>
             <p className="mt-4 max-w-xl text-zinc-300">
               Chame no WhatsApp e fale direto com a barbearia para tirar dúvidas sobre serviços e horários.
             </p>
@@ -28,10 +28,14 @@ export default function Footer() {
 
         <div className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-6 text-sm text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <img src={siteConfig.logo} alt={`Logo ${siteConfig.brandName}`} className="h-10 w-10 rounded-md object-contain" />
+            <img src={siteConfig.logo} alt={`Logo ${siteConfig.brandName}`} width="256" height="256" loading="lazy" className="h-10 w-10 rounded-md object-contain" />
             <span>{siteConfig.brandName}</span>
           </div>
-          <span>{siteConfig.address}</span>
+          <div>
+            <address className="not-italic">{siteConfig.address}</address>
+            <a href={`tel:+${siteConfig.whatsappNumber}`} className="mt-1 inline-block py-2">{displayPhone}</a>
+            <p>{siteConfig.openHours} · Consulte os dias e o fechamento pelo WhatsApp.</p>
+          </div>
         </div>
       </div>
     </footer>

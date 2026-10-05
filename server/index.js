@@ -27,6 +27,8 @@ import {
   updateOrderStatus,
 } from './lib/orders.js'
 import { prisma } from './lib/prisma.js'
+import { publicPageHtml, readSeoTemplate, productPath } from './lib/publicSeo.js'
+import { renderSitemap } from '../src/lib/seo.js'
 import {
   createAuthToken,
   getUserFromRequest,
@@ -239,6 +241,10 @@ const checkoutLimiter = createRateLimiter({
 })
 
 app.use(corsMiddleware)
+app.use('/api', (_req, res, next) => {
+  res.setHeader('X-Robots-Tag', 'noindex, follow')
+  next()
+})
 
 async function requireAdmin(req, res, next) {
   try {
@@ -800,11 +806,43 @@ app.post('/api/checkout', checkoutLimiter, async (req, res, next) => {
   }
 })
 
+// APIs desconhecidas não devem devolver a página inicial com status 200.
+app.use('/api', (_req, res) => res.status(404).json({ error: 'Endpoint não encontrado.' }))
+
 if (!process.env.VERCEL) {
+  app.get(['/index.html', '/admin.html', '/login.html', '/cadastro.html', '/admin/', '/login/', '/cadastro/'], (req, res, next) => {
+    const canonicalPath = req.path === '/index.html' ? '/' : req.path.replace(/\.html$|\/$/g, '')
+    if (canonicalPath === req.path) return next()
+    const query = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : ''
+    res.redirect(308, `${canonicalPath}${query}`)
+  })
+  app.get('/sitemap.xml', async (_req, res, next) => {
+    try { res.type('application/xml').send(renderSitemap(await readProducts())) } catch (error) { next(error) }
+  })
+  app.get('/produto/:id', async (req, res, next) => {
+    try {
+      const product = await readProductById(req.params.id)
+      if (!product) {
+        res.setHeader('X-Robots-Tag', 'noindex, follow')
+        return res.status(404).send(publicPageHtml(await readSeoTemplate(), '/404'))
+      }
+      if (req.path.endsWith('/')) return res.redirect(308, productPath(product.id))
+      res.send(publicPageHtml(await readSeoTemplate(), productPath(product.id), product))
+    } catch (error) { next(error) }
+  })
+  app.get(['/admin', '/login', '/cadastro'], (req, res) => {
+    res.setHeader('X-Robots-Tag', 'noindex, follow')
+    res.sendFile(path.join(rootDir, `dist/${req.path.replace(/\/$/, '').slice(1)}.html`))
+  })
   app.use('/assets/products', express.static(path.join(rootDir, 'public', 'assets', 'products')))
-  app.use(express.static(path.join(rootDir, 'dist')))
+  app.use(express.static(path.join(rootDir, 'dist'), {
+    setHeaders(res, filePath) {
+      if (/(?:admin|login|cadastro|404)\.html$/.test(filePath) || filePath.includes(`${path.sep}_seo${path.sep}`)) res.setHeader('X-Robots-Tag', 'noindex, follow')
+    },
+  }))
   app.get(/.*/, (_req, res) => {
-    res.sendFile(path.join(rootDir, 'dist/index.html'))
+    res.setHeader('X-Robots-Tag', 'noindex, follow')
+    res.status(404).sendFile(path.join(rootDir, 'dist/404.html'))
   })
 }
 

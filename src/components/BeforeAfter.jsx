@@ -75,13 +75,21 @@ export default function BeforeAfter() {
           >
             <img
               src={comparison.afterImage}
-              alt="Imagem de depois"
+              alt="Corte masculino após o acabamento na Barbershop WS"
+              width="960"
+              height="1280"
+              loading="lazy"
+              decoding="async"
               className="pointer-events-none absolute inset-0 h-full w-full object-cover object-[54%_44%]"
               draggable="false"
             />
             <img
               src={comparison.beforeImage}
-              alt="Imagem de antes"
+              alt="Cabelo antes do corte mostrado na comparação"
+              width="960"
+              height="1280"
+              loading="lazy"
+              decoding="async"
               className="pointer-events-none absolute inset-0 h-full w-full object-cover object-[54%_44%]"
               style={{
                 clipPath: 'inset(0 calc(100% - var(--before-position)) 0 0)',
@@ -119,7 +127,8 @@ export default function BeforeAfter() {
                 applyPosition(next)
                 setPosition(next)
               }}
-              className="absolute bottom-4 left-1/2 z-20 h-1 w-[calc(100%-2rem)] -translate-x-1/2 cursor-ew-resize accent-gold-300 opacity-0"
+              onPointerDown={(event) => event.stopPropagation()}
+              className="absolute bottom-4 left-1/2 z-20 h-6 w-[calc(100%-2rem)] -translate-x-1/2 cursor-ew-resize accent-gold-300 opacity-0 focus-visible:opacity-100"
             />
           </div>
         </div>

@@ -8,7 +8,10 @@ export default function Hero() {
     <section id="topo" className="relative flex min-h-[92svh] items-end overflow-hidden pb-12 pt-28 sm:pb-16 lg:pb-20">
       <img
         src={siteConfig.heroImage}
-        alt="Fachada moderna da Barbershop WS"
+        alt="Fachada da Barbershop WS no Boqueirão, em Praia Grande – SP"
+        width="720"
+        height="1280"
+        fetchPriority="high"
         className="absolute inset-0 h-full w-full object-cover object-[50%_30%]"
       />
       <div className="absolute inset-0 bg-gradient-to-r from-black via-black/72 to-black/20" />
@@ -21,15 +24,15 @@ export default function Hero() {
             {siteConfig.openHours}
           </p>
           <h1 className="text-4xl font-black leading-[1.08] text-white sm:text-6xl sm:leading-[1.02] lg:text-7xl">
-            Seu estilo <span className="gold-text block sm:inline">começa aqui</span>
+            Barbearia em <span className="gold-text block sm:inline">Praia Grande</span>
           </h1>
           <p className="mt-6 max-w-[20rem] break-words text-lg leading-8 text-zinc-200 sm:max-w-2xl sm:text-xl">
-            Cortes, barba e cuidado masculino com qualidade e personalidade.
+            Na Barbershop WS, no Boqueirão, seu estilo começa aqui. Corte masculino, degradê (fade) e barba com cuidado no acabamento. Consulte horários pelo WhatsApp.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a href={whatsappUrl} target="_blank" rel="noreferrer" className="btn-whatsapp w-full sm:w-auto">
               <WhatsAppIcon size={19} />
-              Chamar no WhatsApp
+              Agendar pelo WhatsApp
             </a>
             <a href="#localizacao" className="btn-secondary w-full sm:w-auto">
               <MapPin size={19} />

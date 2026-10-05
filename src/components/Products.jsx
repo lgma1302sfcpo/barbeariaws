@@ -10,6 +10,7 @@ import {
 } from '../lib/cart.js'
 import { fallbackProducts } from '../data/fallbackProducts.js'
 import { apiUrl, readApiJson } from '../lib/api.js'
+import SiteImage from './shared/SiteImage.jsx'
 
 function formatCurrency(cents, currency = 'brl') {
   return new Intl.NumberFormat('pt-BR', {
@@ -120,7 +121,7 @@ export default function Products() {
               return (
                 <article key={product.id} className="premium-card overflow-hidden transition duration-300 hover:-translate-y-1 hover:border-gold-300/35">
                   <a href={`/produto/${product.id}`} className="block">
-                    <img
+                    <SiteImage
                       src={product.image}
                       alt={product.name}
                       className="h-56 w-full object-cover"

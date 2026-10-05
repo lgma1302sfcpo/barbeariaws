@@ -286,13 +286,30 @@ Se precisar trocar a senha do admin pelo seed, rode uma vez com `RESET_ADMIN_PAS
 
 ## Dados Do Site
 
-Edite `src/data/siteContent.js` para alterar:
+Edite `src/data/business.js` para alterar os dados públicos da empresa:
 
 - WhatsApp: `whatsappNumber` e `whatsappMessage`
 - Instagram: `instagramUrl`
 - Endereco e Google Maps: `address`, `mapsUrl` e `mapsEmbedUrl`
-- Logo e midias: `logo`, `heroImage`, `video`, `galleryItems` e `comparison`
-- Servicos e precos: array `services`
-- Antes e depois: objeto `comparison`
+- Domínio definitivo: `siteUrl`
+- Dias e horários completos: `openHours` e `openingHoursSpecification` (preencher juntos com dados confirmados)
+- CEP, coordenadas e redes opcionais: `postalCode`, `geo`, `facebookUrl`, `tiktokUrl`
+
+Edite `src/data/siteContent.js` para serviços, preços, galeria, antes/depois, números e depoimentos.
 
 Os arquivos publicos ficam em `public/assets`.
+
+## SEO e validação
+
+O build pré-renderiza a página inicial, gera `robots.txt` e páginas internas com `noindex`. O sitemap é dinâmico e inclui somente a home e os produtos públicos ativos. As páginas de produto recebem metadados do servidor Express ou da função `api/seo.js` na Vercel.
+
+```bash
+npm run build
+npm run test:seo
+```
+
+Para verificar respostas HTTP, páginas de produto e sitemap localmente, use `npm start` após o build. `npm run preview` serve o frontend Vite e não executa as funções/backend de produção.
+
+As imagens otimizadas já estão versionáveis em `public/assets/optimized`. Para gerar novamente as cópias a partir dos originais, use `python scripts/optimize-images.py` em um ambiente com Pillow instalado; o deploy não depende de Python.
+
+Veja o relatório e as informações pendentes em [SEO-REPORT.md](SEO-REPORT.md).

@@ -1,0 +1,38 @@
+{
+  "/assets/products/gel-fixador.webp": {
+    "width": 1080,
+    "height": 1080
+  },
+  "/assets/optimized/logo-square.webp": {
+    "width": 256,
+    "height": 256
+  },
+  "/assets/optimized/barbershop-fachada.webp": {
+    "width": 720,
+    "height": 1280
+  },
+  "/assets/optimized/antes.webp": {
+    "width": 960,
+    "height": 1280
+  },
+  "/assets/optimized/depois.webp": {
+    "width": 960,
+    "height": 1280
+  },
+  "/assets/optimized/corte-01.webp": {
+    "width": 845,
+    "height": 842
+  },
+  "/assets/optimized/corte-02.webp": {
+    "width": 842,
+    "height": 840
+  },
+  "/assets/optimized/corte-03.webp": {
+    "width": 843,
+    "height": 840
+  },
+  "/assets/optimized/corte-04.webp": {
+    "width": 840,
+    "height": 842
+  }
+}

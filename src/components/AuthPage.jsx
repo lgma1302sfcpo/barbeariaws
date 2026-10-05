@@ -36,7 +36,7 @@ export default function AuthPage({ mode = 'login' }) {
   }
 
   return (
-    <main className="min-h-screen bg-ink-950 pt-24 text-white">
+    <main id="conteudo" className="min-h-screen bg-ink-950 pt-24 text-white">
       <section className="section-padding">
         <div className="section-shell grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <div>
@@ -60,6 +60,7 @@ export default function AuthPage({ mode = 'login' }) {
                 <label className="block text-sm font-bold text-zinc-300">
                   Nome
                   <input
+                    autoComplete="name"
                     value={form.name}
                     onChange={(event) => setField('name', event.target.value)}
                     className="mt-2 h-12 w-full rounded-md border border-white/10 bg-black/35 px-3 text-white outline-none transition focus:border-gold-300"
@@ -71,6 +72,7 @@ export default function AuthPage({ mode = 'login' }) {
               <label className="block text-sm font-bold text-zinc-300">
                 E-mail
                 <input
+                  autoComplete="email"
                   value={form.email}
                   onChange={(event) => setField('email', event.target.value)}
                   type="email"
@@ -83,6 +85,8 @@ export default function AuthPage({ mode = 'login' }) {
                 <label className="block text-sm font-bold text-zinc-300">
                   WhatsApp
                   <input
+                    type="tel"
+                    autoComplete="tel"
                     value={form.phone}
                     onChange={(event) => setField('phone', event.target.value)}
                     inputMode="tel"
@@ -95,6 +99,7 @@ export default function AuthPage({ mode = 'login' }) {
               <label className="block text-sm font-bold text-zinc-300">
                 Senha
                 <input
+                  autoComplete={isRegister ? 'new-password' : 'current-password'}
                   value={form.password}
                   onChange={(event) => setField('password', event.target.value)}
                   type="password"

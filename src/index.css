@@ -26,6 +26,15 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  html :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid #e9cd82;
+    outline-offset: 4px;
+  }
+
+  section[id] { scroll-margin-top: 6rem; }
+  main { min-width: 0; }
+  img { max-width: 100%; }
+
   ::selection {
     background: rgba(200, 159, 72, 0.45);
     color: #fff;
@@ -66,7 +75,7 @@
   }
 
   .btn-whatsapp {
-    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-[#34af23]/80 bg-[#34af23] px-5 py-3 text-sm font-bold text-white shadow-[0_18px_50px_rgba(52,175,35,0.25)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#2f9f20] focus:outline-none focus:ring-2 focus:ring-[#34af23] focus:ring-offset-2 focus:ring-offset-ink-950;
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-[#34af23]/80 bg-[#34af23] px-5 py-3 text-sm font-bold text-black shadow-[0_18px_50px_rgba(52,175,35,0.25)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#2f9f20] focus:outline-none focus:ring-2 focus:ring-[#34af23] focus:ring-offset-2 focus:ring-offset-ink-950;
   }
 
   .btn-secondary {
@@ -136,4 +145,26 @@
 .gallery-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(200, 159, 72, 0.75);
   border-radius: 999px;
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 200;
+  padding: 0.75rem 1rem;
+  background: #e9cd82;
+  color: #050505;
+  transform: translateY(-200%);
+}
+.skip-link:focus { transform: translateY(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal { opacity: 1; transform: none; }
 }

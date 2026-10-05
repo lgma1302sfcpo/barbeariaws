@@ -3,6 +3,8 @@ import { ArrowLeft, Loader2, Minus, Plus, ShoppingCart } from 'lucide-react'
 import { fallbackProducts } from '../data/fallbackProducts.js'
 import { apiUrl, readApiJson } from '../lib/api.js'
 import { maxProductQuantity, openCartMenu, readCart, setProductQuantity } from '../lib/cart.js'
+import { applyMetadata, pageMetadata } from '../lib/seo.js'
+import SiteImage from './shared/SiteImage.jsx'
 
 function formatCurrency(cents, currency = 'brl') {
   return new Intl.NumberFormat('pt-BR', {
@@ -47,6 +49,10 @@ export default function ProductDetail({ productId }) {
     loadProduct()
   }, [productId])
 
+  useEffect(() => {
+    if (!loading) applyMetadata(pageMetadata(`/produto/${encodeURIComponent(productId)}`, product))
+  }, [loading, product, productId])
+
   const updateQuantity = (value) => {
     if (!product) return
 
@@ -74,7 +80,7 @@ export default function ProductDetail({ productId }) {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-ink-950 px-5 py-24 text-white">
+      <main id="conteudo" className="min-h-screen bg-ink-950 px-5 py-24 text-white">
         <div className="section-shell flex min-h-96 items-center justify-center text-zinc-300">
           <Loader2 className="mr-2 animate-spin text-gold-300" size={20} />
           Carregando produto
@@ -85,13 +91,14 @@ export default function ProductDetail({ productId }) {
 
   if (error && !product) {
     return (
-      <main className="min-h-screen bg-ink-950 px-5 py-24 text-white">
+      <main id="conteudo" className="min-h-screen bg-ink-950 px-5 py-24 text-white">
         <div className="section-shell">
           <a href="/#produtos" className="btn-secondary">
             <ArrowLeft size={18} />
             Voltar aos produtos
           </a>
-          <div className="premium-card mt-8 p-6 text-red-100">{error}</div>
+          <h1 className="section-title mt-8">Produto não encontrado</h1>
+          <div role="alert" className="premium-card mt-8 p-6 text-red-100">{error}</div>
         </div>
       </main>
     )
@@ -101,7 +108,7 @@ export default function ProductDetail({ productId }) {
   const soldOut = maxQuantity <= 0
 
   return (
-    <main className="min-h-screen bg-ink-950 pt-24 text-white">
+    <main id="conteudo" className="min-h-screen bg-ink-950 pt-24 text-white">
       <section className="section-padding">
         <div className="section-shell">
           <a href="/#produtos" className="btn-secondary">
@@ -111,7 +118,7 @@ export default function ProductDetail({ productId }) {
 
           <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-start">
             <div className="premium-card overflow-hidden">
-              <img src={product.image} alt={product.name} className="max-h-[680px] w-full object-cover" />
+              <SiteImage src={product.image} alt={product.name} className="max-h-[680px] w-full object-cover" />
             </div>
 
             <div className="premium-card p-6 lg:p-8">
@@ -143,6 +150,7 @@ export default function ProductDetail({ productId }) {
                     <Minus size={18} />
                   </button>
                   <input
+                    aria-label={`Quantidade de ${product.name}`}
                     type="number"
                     min="1"
                     max={maxQuantity}

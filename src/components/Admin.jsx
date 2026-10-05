@@ -475,7 +475,7 @@ export default function Admin() {
 
   if (!isAdmin) {
     return (
-      <main className="min-h-screen bg-ink-950 px-5 py-8 text-white sm:px-6 lg:px-8">
+      <main id="conteudo" className="min-h-screen bg-ink-950 px-5 py-8 text-white sm:px-6 lg:px-8">
         <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-xl items-center">
           <section className="premium-card w-full p-6 lg:p-8">
             <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-md border border-gold-300/25 bg-gold-300/10 text-gold-300">
@@ -537,7 +537,7 @@ export default function Admin() {
   }
 
   return (
-    <main className="min-h-screen bg-ink-950 px-5 py-8 text-white sm:px-6 lg:px-8">
+    <main id="conteudo" className="min-h-screen bg-ink-950 px-5 py-8 text-white sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-7xl">
         <header className="flex flex-col justify-between gap-5 border-b border-white/10 pb-6 md:flex-row md:items-center">
           <div>
