@@ -7,7 +7,7 @@ export const siteConfig = {
   socialImage: '/assets/og-barbershop-ws.jpg',
   video: '/assets/barbershop-video.mp4',
   whatsappNumber: '5513988235036',
-  whatsappMessage: 'Olá! Encontrei a Barbershop WS pelo site e gostaria de consultar horários para agendar corte ou barba.',
+  whatsappMessage: 'Olá! Encontrei a Barbershop WS pelo site e gostaria de tirar uma dúvida sobre os serviços e o atendimento por ordem de chegada.',
   instagramUrl: 'https://www.instagram.com/barbershop_ws_013/',
   streetAddress: 'Duque de Caxias, 1026',
   neighborhood: 'Boqueirão',
@@ -34,6 +34,6 @@ export const whatsappUrl = `https://wa.me/${siteConfig.whatsappNumber}?text=${en
 export const faqItems = [
   { question: 'Onde fica a Barbershop WS em Praia Grande?', answer: `A barbearia fica na ${siteConfig.streetAddress}, no ${siteConfig.neighborhood}, em ${siteConfig.city} – ${siteConfig.region}, na Baixada Santista, no estado de São Paulo. Use o botão Como chegar para abrir a localização no Google Maps.` },
   { question: 'Quais serviços a barbearia oferece?', answer: 'O site apresenta corte masculino, barba, corte + barba, corte com alisante, luzes, platinado ou pigmentação, pezinho, sobrancelha e escova penteado. A galeria mostra também cortes degradê (fade) e desenhos laterais. Consulte os valores na seção de serviços.' },
-  { question: 'Como consultar horários e agendar pelo WhatsApp?', answer: 'Toque em Agendar pelo WhatsApp para falar diretamente com a Barbershop WS. Informe o serviço desejado e consulte os horários disponíveis com a equipe.' },
+  { question: 'Preciso agendar horário?', answer: 'Não. O atendimento da Barbershop WS é por ordem de chegada, sem agendamento. Use o WhatsApp para tirar dúvidas sobre os serviços e o funcionamento antes de visitar a barbearia.' },
   { question: 'A barbearia está aberta hoje?', answer: `A informação disponível é: ${siteConfig.openHours.toLowerCase()}. Confirme pelo WhatsApp os dias de atendimento, o fechamento e a disponibilidade de hoje antes de sair.` },
 ]

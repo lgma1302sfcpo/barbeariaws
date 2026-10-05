@@ -14,7 +14,7 @@ export default function FAQ() {
             </details>
           ))}
         </div>
-        <a href={whatsappUrl} target="_blank" rel="noreferrer" className="btn-whatsapp mt-6">Agendar pelo WhatsApp</a>
+        <a href={whatsappUrl} target="_blank" rel="noreferrer" className="btn-whatsapp mt-6">Falar no WhatsApp</a>
       </div>
     </section>
   )

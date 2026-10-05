@@ -9,9 +9,9 @@ export default function Footer() {
         <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center" data-reveal>
           <div>
             <p className="section-eyebrow">Fale com a Barbershop WS</p>
-            <h2 className="text-3xl font-black text-white sm:text-4xl">Agende seu corte ou barba pelo WhatsApp.</h2>
+            <h2 className="text-3xl font-black text-white sm:text-4xl">Corte e barba por ordem de chegada.</h2>
             <p className="mt-4 max-w-xl text-zinc-300">
-              Chame no WhatsApp e fale direto com a barbearia para tirar dúvidas sobre serviços e horários.
+              Venha à Barbershop WS: atendemos por ordem de chegada, sem agendamento. Fale no WhatsApp para tirar dúvidas sobre serviços e funcionamento.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">

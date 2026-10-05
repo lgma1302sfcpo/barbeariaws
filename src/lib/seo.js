@@ -1,7 +1,7 @@
 import { siteConfig } from '../data/business.js'
 
 export const homeTitle = 'Barbearia em Praia Grande | Corte e Barba | Barbershop WS'
-export const homeDescription = 'Corte masculino, degradê e barba no Boqueirão, em Praia Grande – SP. Conheça os serviços e valores da Barbershop WS e consulte horários pelo WhatsApp.'
+export const homeDescription = 'Corte masculino, degradê e barba no Boqueirão, em Praia Grande – SP. Atendimento por ordem de chegada na Barbershop WS. Confira serviços e localização.'
 export const absoluteUrl = (path = '/') => new URL(path, `${siteConfig.siteUrl}/`).href
 export const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]))
 export const serializeJsonLd = (value) => JSON.stringify(value).replace(/</g, '\\u003c')

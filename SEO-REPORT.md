@@ -127,3 +127,7 @@ Após alterações nos dados públicos, execute novamente o build e publique a v
 O bloqueio temporário do arquivo de engine Prisma durante um build foi resolvido encerrando o servidor de testes, que mantinha a DLL aberta. O build final completo passou.
 
 A versão exata do commit `7ee76e6` também foi extraída para uma pasta isolada e validada com build Vite, pré-renderização e os 14 testes de SEO aprovados. As alterações locais anteriores em `HeaderCart.jsx` e os arquivos de `public/assets/posts/` foram preservados e não incluídos no commit de SEO. O bundle desse commit tem aproximadamente 221 KB / 66,90 KB gzip de JavaScript inicial.
+
+### Correção do atendimento após confirmação do proprietário
+
+Em 05/10/2026, o proprietário confirmou que telefone e WhatsApp são `(13) 98823-5036`, o Instagram é `barbershop_ws_013` e o atendimento é por ordem de chegada, sem agendamento. Os CTAs da home e da FAQ passaram a “Falar no WhatsApp”; hero, rodapé, FAQ, mensagem inicial do WhatsApp e descrição SEO explicam o modelo de atendimento. Nenhum botão, integração ou fluxo do carrinho foi removido. Build completo e os 14 testes de SEO aprovados após a correção. As recomendações anteriores de configurar reservas não se aplicam ao atendimento atual.

@@ -27,12 +27,12 @@ export default function Hero() {
             Barbearia em <span className="gold-text block sm:inline">Praia Grande</span>
           </h1>
           <p className="mt-6 max-w-[20rem] break-words text-lg leading-8 text-zinc-200 sm:max-w-2xl sm:text-xl">
-            Na Barbershop WS, no Boqueirão, seu estilo começa aqui. Corte masculino, degradê (fade) e barba com cuidado no acabamento. Consulte horários pelo WhatsApp.
+            Na Barbershop WS, no Boqueirão, seu estilo começa aqui. Corte masculino, degradê (fade) e barba com cuidado no acabamento. Atendimento por ordem de chegada.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a href={whatsappUrl} target="_blank" rel="noreferrer" className="btn-whatsapp w-full sm:w-auto">
               <WhatsAppIcon size={19} />
-              Agendar pelo WhatsApp
+              Falar no WhatsApp
             </a>
             <a href="#localizacao" className="btn-secondary w-full sm:w-auto">
               <MapPin size={19} />
